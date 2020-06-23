@@ -1,0 +1,55 @@
+# Node.js with Angular
+# Build a Node.js project that uses Angular.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+- task: replacetokens@3
+  inputs:
+    targetFiles: |
+      **/environment.ts
+      **/environment.prod.ts
+      **/index.html
+    encoding: "auto"
+    writeBOM: true
+    actionOnMissing: "warn"
+    keepToken: false
+    tokenPrefix: "#{"
+    tokenSuffix: "}#"
+    useLegacyPattern: false
+    enableTelemetry: true
+- script: |
+    npm install -g @angular/cli
+    npm install
+    ng build --prod
+  displayName: 'npm install and build'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: "$(System.DefaultWorkingDirectory)/dist/event-planning"
+    Contents: "**"
+    TargetFolder: "$(build.artifactstagingdirectory)/dist"
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: "$(System.DefaultWorkingDirectory)"
+    Contents: "firebase.json"
+    TargetFolder: "$(build.artifactstagingdirectory)"
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: "$(System.DefaultWorkingDirectory)/utils"
+    Contents: "**"
+    TargetFolder: "$(build.artifactstagingdirectory)"
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+    ArtifactName: "drop"
+    publishLocation: "Container"
