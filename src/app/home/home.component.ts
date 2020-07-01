@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-home",
@@ -13,7 +14,10 @@ export class HomeComponent implements OnInit {
   minutes: number[] = [];
   hours: number[] = [];
 
-  constructor(private firestore: AngularFirestore) {
+  constructor(
+    private readonly firestore: AngularFirestore,
+    private readonly router: Router
+  ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
       date: new FormControl("", [Validators.required]),
@@ -38,11 +42,17 @@ export class HomeComponent implements OnInit {
     let endDate = new Date(date);
     endDate.setHours(this.formGroup.get("endHour").value);
     endDate.setMinutes(this.formGroup.get("endMinute").value);
-    console.log(name);
-    this.firestore.collection("events").doc(uuid()).set({
-      name: name,
-      startDate: startDate,
-      endDate: endDate,
-    });
+    let id = uuid();
+    this.firestore
+      .collection("events")
+      .doc(id)
+      .set({
+        name: name,
+        startDate: startDate,
+        endDate: endDate,
+      })
+      .then(() => {
+        this.router.navigate(["event", id]);
+      });
   }
 }
