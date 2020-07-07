@@ -50,13 +50,14 @@ export class AuthService {
   }
 
   // Sign up with email/password
-  SignUp(email, password) {
+  SignUp(email, password, displayName) {
     return this.afAuth
       .createUserWithEmailAndPassword(email, password)
       .then((result) => {
         /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
         this.SendVerificationMail();
+        result.user.displayName = displayName;
         this.SetUserData(result.user);
       })
       .catch((error) => {
@@ -92,6 +93,9 @@ export class AuthService {
   // Sign in with Google
   GoogleAuth() {
     return this.AuthLogin(new auth.GoogleAuthProvider());
+  }
+  FacebookAuth() {
+    return this.AuthLogin(new auth.FacebookAuthProvider());
   }
 
   // Auth logic to run auth providers

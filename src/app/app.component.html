@@ -44,7 +44,7 @@
       *ngIf="authService.userData; else userLoggedIn"
     >
       <a
-        class="nav-link dropdown-toggle"
+        class="nav-link dropdown-toggle btn text-white"
         href="#"
         id="profileDDL"
         data-toggle="dropdown"
@@ -60,7 +60,8 @@
     </div>
     <ng-template #userLoggedIn
       ><div class="text-white">
-        <a href="/login">Login</a> | <a href="/register">Register</a>
+        <a class="btn text-white" href="/login">Login</a> |
+        <a class="btn text-white" href="/register">Register</a>
       </div></ng-template
     >
   </div>

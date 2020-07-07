@@ -1,58 +1,66 @@
 <div class="container">
   <div class="row">
-    <div class="col-12">
-      <h3>Sign Up</h3>
+    <div class="col-12 col-sm-6 p-0">
+      <img src="assets\vb.jpg" class="img-fluid" alt="vb" />
+    </div>
+    <div class="col-12 col-sm-6 p-5 text-center">
+      <h3>Register</h3>
 
-      <div class="formGroup">
-        <input
-          type="email"
-          class="formControl"
-          placeholder="Email Address"
-          #userEmail
-          required
-        />
-      </div>
+      <mat-form-field class="mx-3 w-100" appearance="fill">
+        <mat-label>Username/Email</mat-label>
+        <input matInput type="email" #userName required />
+      </mat-form-field>
+      <mat-form-field class="mx-3 w-100" appearance="fill">
+        <mat-label>Display Name</mat-label>
+        <input matInput type="text" #displayName required />
+      </mat-form-field>
+      <mat-form-field class="mx-3 w-100" appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" #userPassword required />
+      </mat-form-field>
 
-      <div class="formGroup">
-        <input
-          type="password"
-          class="formControl"
-          placeholder="Password"
-          #userPwd
-          required
-        />
-      </div>
-
-      <div class="formGroup">
-        <input
-          type="button"
-          class="btn btnPrimary"
-          value="Sign Up"
-          (click)="authService.SignUp(userEmail.value, userPwd.value)"
-        />
-      </div>
+      <button
+        class="m-3"
+        (click)="
+          authService.SignUp(
+            userName.value,
+            userPassword.value,
+            displayName.value
+          )
+        "
+        mat-button
+        color="primary"
+      >
+        Log in
+      </button>
 
       <div class="formGroup">
         <span class="or"><span class="orInner">Or</span></span>
       </div>
 
-      <!-- Continue with Google -->
-      <div class="formGroup">
+      <div>
         <button
-          type="button"
-          class="btn googleBtn"
+          class="m-3"
+          (click)="authService.FacebookAuth()"
+          mat-button
+          color="primary"
+        >
+          <i class="fab fa-facebook"></i>
+          Continue with Facebook
+        </button>
+        <button
+          class="m-3"
           (click)="authService.GoogleAuth()"
+          mat-button
+          color="primary"
         >
           <i class="fab fa-google-plus-g"></i>
-          Continue with Google
+          Log in with Google
         </button>
       </div>
-    </div>
-
-    <div class="redirectToLogin">
       <span
         >Already have an account?
-        <span class="redirect" routerLink="/sign-in">Log In</span></span
+        <span class="btn" routerLink="/login">Log In</span></span
       >
     </div>
   </div>

@@ -1,64 +1,57 @@
 <div class="container">
   <div class="row">
-    <div class="col-12">
-      <h3>Sign In</h3>
-      <div class="formGroup">
-        <input
-          type="text"
-          class="formControl"
-          placeholder="Username"
-          #userName
-          required
-        />
-      </div>
+    <div class="col-12 col-sm-6 p-0">
+      <img src="assets\vb.jpg" class="img-fluid" alt="vb" />
+    </div>
+    <div class="col-12 col-sm-6 p-5 text-center">
+      <h3>Login</h3>
 
-      <div class="formGroup">
-        <input
-          type="password"
-          class="formControl"
-          placeholder="Password"
-          #userPassword
-          required
-        />
-      </div>
+      <mat-form-field class="mx-3 w-100" appearance="fill">
+        <mat-label>Username/Email</mat-label>
+        <input matInput type="text" #userName required />
+      </mat-form-field>
+      <mat-form-field class="mx-3 w-100" appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" #userPassword required />
+      </mat-form-field>
 
-      <!-- Calling SignIn Api from AuthService -->
-      <div class="formGroup">
-        <input
-          type="button"
-          class="btn btnPrimary"
-          value="Log in"
-          (click)="authService.SignIn(userName.value, userPassword.value)"
-        />
-      </div>
+      <button
+        class="m-3"
+        (click)="authService.SignIn(userName.value, userPassword.value)"
+        mat-button
+        color="primary"
+      >
+        Log in
+      </button>
 
       <div class="formGroup">
         <span class="or"><span class="orInner">Or</span></span>
       </div>
-
-      <!-- Calling GoogleAuth Api from AuthService -->
-      <div class="formGroup">
+      <div>
         <button
-          type="button"
-          class="btn googleBtn"
+          class="m-3"
+          (click)="authService.FacebookAuth()"
+          mat-button
+          color="primary"
+        >
+          <i class="fab fa-facebook"></i>
+          Continue with Facebook
+        </button>
+        <button
+          class="m-3"
           (click)="authService.GoogleAuth()"
+          mat-button
+          color="primary"
         >
           <i class="fab fa-google-plus-g"></i>
           Log in with Google
         </button>
       </div>
-
-      <div class="forgotPassword">
-        <span routerLink="/forgot-password">Forgot Password?</span>
+      <div>
+        <span class="btn" routerLink="/forgot-password">Forgot Password?</span>
       </div>
-    </div>
-
-    <div class="redirectToLogin">
       <span
-        >Don't have an account?<span
-          class="redirect"
-          routerLink="/register-user"
-        >
+        >Don't have an account?<span class="btn" routerLink="/register">
           Sign Up</span
         ></span
       >
