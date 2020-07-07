@@ -3,6 +3,7 @@ import { AngularFirestore } from "@angular/fire/firestore";
 import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
+import { EventModel } from "../shared/models/event-model";
 
 @Component({
   selector: "app-home",
@@ -43,14 +44,15 @@ export class HomeComponent implements OnInit {
     endDate.setHours(this.formGroup.get("endHour").value);
     endDate.setMinutes(this.formGroup.get("endMinute").value);
     let id = uuid();
+    let eventModel = new EventModel();
+    eventModel.id = id;
+    eventModel.name = name;
+    eventModel.startDate = startDate;
+    eventModel.endDate = endDate;
     this.firestore
       .collection("events")
       .doc(id)
-      .set({
-        name: name,
-        startDate: startDate,
-        endDate: endDate,
-      })
+      .set({ ...eventModel })
       .then(() => {
         this.router.navigate(["event", id]);
       });
