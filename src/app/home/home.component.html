@@ -1,64 +1,59 @@
-<div class="container">
-  <div class="row">
-    <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
-      <mat-form-field appearance="fill">
-        <mat-label>Event Name</mat-label>
-        <input matInput type="text" formControlName="name" />
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Date</mat-label>
-        <input matInput [matDatepicker]="picker1" formControlName="date" />
-        <mat-datepicker-toggle
-          matSuffix
-          [for]="picker1"
-        ></mat-datepicker-toggle>
-        <mat-datepicker #picker1></mat-datepicker>
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Start Hour</mat-label>
-        <mat-select formControlName="startHour">
-          <mat-option *ngFor="let hour of hours" [value]="hour">
-            {{ hour }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Start Minute</mat-label>
-        <mat-select formControlName="startMinute">
-          <mat-option *ngFor="let minute of minutes" [value]="minute">
-            {{ minute }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>End Hour</mat-label>
-        <mat-select formControlName="endHour">
-          <mat-option *ngFor="let hour of hours" [value]="hour">
-            {{ hour }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>End Minute</mat-label>
-        <mat-select formControlName="endMinute">
-          <mat-option *ngFor="let minute of minutes" [value]="minute">
-            {{ minute }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-slide-toggle color="primary" formControlName="hasMaxAttendees"
-        >Cap Attendees</mat-slide-toggle
-      >
-      <mat-form-field
-        *ngIf="formGroup.get('hasMaxAttendees').value"
-        appearance="fill"
-      >
-        <mat-label>Max Attendees</mat-label>
-        <input matInput type="text" formControlName="maxAttendees" />
-      </mat-form-field>
-      <button class="m-3" (click)="createEvent()" mat-button color="primary">
-        Create
-      </button>
-    </div>
+<div class="row">
+  <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
+    <mat-form-field appearance="fill">
+      <mat-label>Event Name</mat-label>
+      <input matInput type="text" formControlName="name" />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="picker1" formControlName="date" />
+      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+      <mat-datepicker #picker1></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Start Hour</mat-label>
+      <mat-select formControlName="startHour">
+        <mat-option *ngFor="let hour of hours" [value]="hour">
+          {{ hour }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Start Minute</mat-label>
+      <mat-select formControlName="startMinute">
+        <mat-option *ngFor="let minute of minutes" [value]="minute">
+          {{ minute }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>End Hour</mat-label>
+      <mat-select formControlName="endHour">
+        <mat-option *ngFor="let hour of hours" [value]="hour">
+          {{ hour }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>End Minute</mat-label>
+      <mat-select formControlName="endMinute">
+        <mat-option *ngFor="let minute of minutes" [value]="minute">
+          {{ minute }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-slide-toggle color="primary" formControlName="hasMaxAttendees"
+      >Cap Attendees</mat-slide-toggle
+    >
+    <mat-form-field
+      *ngIf="formGroup.get('hasMaxAttendees').value"
+      appearance="fill"
+    >
+      <mat-label>Max Attendees</mat-label>
+      <input matInput type="text" formControlName="maxAttendees" />
+    </mat-form-field>
+    <button class="m-3" (click)="createEvent()" mat-button color="primary">
+      Create
+    </button>
   </div>
 </div>
