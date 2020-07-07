@@ -7,6 +7,7 @@ import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { ForgotPasswordComponent } from "./components/forgot-password/forgot-password.component";
 import { VerifyEmailComponent } from "./components/verify-email/verify-email.component";
 import { AuthGuard } from "./shared/guard/auth.guard";
+import { SignUpComponent } from "./components/sign-up/sign-up.component";
 
 const routes: Routes = [
   {
@@ -19,7 +20,7 @@ const routes: Routes = [
     component: EventComponent,
   },
   { path: "login", component: SignInComponent },
-  { path: "register", component: SignInComponent },
+  { path: "register", component: SignUpComponent },
   {
     path: "dashboard",
     component: DashboardComponent,

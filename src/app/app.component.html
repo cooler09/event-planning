@@ -12,7 +12,7 @@
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
-    <ul class="navbar-nav">
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
       <li class="nav-item active">
         <a class="nav-link" href="/"
           >Home <span class="sr-only">(current)</span></a
@@ -39,6 +39,30 @@
         >
       </li>
     </ul>
+    <div
+      class="text-white dropdown"
+      *ngIf="authService.userData; else userLoggedIn"
+    >
+      <a
+        class="nav-link dropdown-toggle"
+        href="#"
+        id="profileDDL"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        {{ authService.userData.displayName }}
+      </a>
+      <div class="dropdown-menu" aria-labelledby="profileDDL">
+        <a class="dropdown-item" href="/dashboard">Profile</a>
+        <a class="dropdown-item" (click)="authService.SignOut()">Logout</a>
+      </div>
+    </div>
+    <ng-template #userLoggedIn
+      ><div class="text-white">
+        <a href="/login">Login</a> | <a href="/register">Register</a>
+      </div></ng-template
+    >
   </div>
 </nav>
 <router-outlet></router-outlet>
