@@ -53,9 +53,8 @@ export class HomeComponent implements OnInit {
     eventModel.endDate = endDate;
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     this.firestore
-      .collection("events")
-      .doc(id)
-      .set({ ...eventModel })
+      .doc<EventModel>(`/events/${id}`)
+      .set(eventModel)
       .then(() => {
         this.router.navigate(["event", id]);
       });

@@ -7,6 +7,8 @@ import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
+import { FormGroup, Validators, FormControl } from "@angular/forms";
+import { AttendeeModel } from "../shared/models/attendee-model";
 
 @Component({
   selector: "app-event",
@@ -17,11 +19,16 @@ export class EventComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   id: string;
   event: EventModel;
+  formGroup: FormGroup;
   constructor(
     public readonly authService: AuthService,
     private readonly firestore: AngularFirestore,
     private readonly route: ActivatedRoute
-  ) {}
+  ) {
+    this.formGroup = new FormGroup({
+      name: new FormControl("", [Validators.required]),
+    });
+  }
   ngOnDestroy(): void {
     this.subscriptions.forEach((_) => {
       _.unsubscribe();
@@ -43,14 +50,11 @@ export class EventComponent implements OnInit, OnDestroy {
       })
     );
   }
-
-  private mapDocumentIdWithData(changes: DocumentChangeAction<{}>[]): any[] {
-    let newData = changes.map((p) => {
-      const data = p.payload.doc.data();
-      const id = p.payload.doc.id;
-      return { id, ...data };
-    });
-
-    return newData;
+  addAttendee() {
+    let name = this.formGroup.get("name").value;
+    let attendee = new AttendeeModel();
+    attendee.name = name;
+    this.event.attendees.push(attendee);
+    this.firestore.doc<EventModel>(`/events/${this.id}`).set(this.event);
   }
 }
