@@ -26,6 +26,8 @@ export class HomeComponent implements OnInit {
       startMinute: new FormControl("", [Validators.required]),
       endHour: new FormControl("", [Validators.required]),
       endMinute: new FormControl("", [Validators.required]),
+      hasMaxAttendees: new FormControl(true, [Validators.required]),
+      maxAttendees: new FormControl(0, []),
     });
     this.minutes = [0, 15, 30, 45];
     for (let index = 1; index <= 24; index++) {
@@ -49,6 +51,7 @@ export class HomeComponent implements OnInit {
     eventModel.name = name;
     eventModel.startDate = startDate;
     eventModel.endDate = endDate;
+    eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     this.firestore
       .collection("events")
       .doc(id)

@@ -3,4 +3,5 @@ export class EventModel {
   name: string;
   startDate: Date;
   endDate: Date;
+  maxAttendees: number;
 }

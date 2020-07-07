@@ -17,6 +17,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatNativeDateModule } from "@angular/material/core";
 import { MatSelectModule } from "@angular/material/select";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { SignInComponent } from "./components/sign-in/sign-in.component";
 import { SignUpComponent } from "./components/sign-up/sign-up.component";
@@ -46,6 +47,7 @@ import { AuthService } from "./shared/services/auth.service";
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSlideToggleModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFireAuthModule,

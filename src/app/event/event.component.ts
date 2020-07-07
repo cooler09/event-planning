@@ -6,6 +6,7 @@ import {
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
 import { EventModel } from "../shared/models/event-model";
+import { AuthService } from "../shared/services/auth.service";
 
 @Component({
   selector: "app-event",
@@ -15,7 +16,9 @@ import { EventModel } from "../shared/models/event-model";
 export class EventComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   id: string;
+  event: EventModel;
   constructor(
+    public readonly authService: AuthService,
     private readonly firestore: AngularFirestore,
     private readonly route: ActivatedRoute
   ) {}
@@ -34,7 +37,7 @@ export class EventComponent implements OnInit, OnDestroy {
             .doc<EventModel>(`/events/${this.id}`)
             .valueChanges()
             .subscribe((_) => {
-              console.log(_);
+              this.event = _;
             })
         );
       })

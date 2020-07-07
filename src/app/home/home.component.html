@@ -46,6 +46,16 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
+      <mat-slide-toggle color="primary" formControlName="hasMaxAttendees"
+        >Cap Attendees</mat-slide-toggle
+      >
+      <mat-form-field
+        *ngIf="formGroup.get('hasMaxAttendees').value"
+        appearance="fill"
+      >
+        <mat-label>Max Attendees</mat-label>
+        <input matInput type="text" formControlName="maxAttendees" />
+      </mat-form-field>
       <button class="m-3" (click)="createEvent()" mat-button color="primary">
         Create
       </button>
