@@ -26,26 +26,11 @@
     <div class="formGroup">
       <span class="or"><span class="orInner">Or</span></span>
     </div>
-    <div>
-      <button
-        class="m-3"
-        (click)="authService.FacebookAuth()"
-        mat-button
-        color="primary"
-      >
-        <i class="fab fa-facebook"></i>
-        Continue with Facebook
-      </button>
-      <button
-        class="m-3"
-        (click)="authService.GoogleAuth()"
-        mat-button
-        color="primary"
-      >
-        <i class="fab fa-google-plus-g"></i>
-        Log in with Google
-      </button>
-    </div>
+
+    <app-social-login
+      (facebookClick)="authService.FacebookAuth()"
+      (googleClick)="authService.GoogleAuth()"
+    ></app-social-login>
     <div>
       <span class="btn" routerLink="/forgot-password">Forgot Password?</span>
     </div>
