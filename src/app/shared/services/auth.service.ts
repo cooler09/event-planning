@@ -28,6 +28,7 @@ export class AuthService {
         localStorage.setItem("user", JSON.stringify(this.userData));
         JSON.parse(localStorage.getItem("user"));
       } else {
+        this.userData = null;
         localStorage.setItem("user", null);
         JSON.parse(localStorage.getItem("user"));
       }
@@ -57,8 +58,7 @@ export class AuthService {
         /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
         this.SendVerificationMail();
-        result.user.displayName = displayName;
-        this.SetUserData(result.user);
+        this.SetUserData(result.user, displayName);
       })
       .catch((error) => {
         window.alert(error.message);
@@ -116,14 +116,14 @@ export class AuthService {
   /* Setting up user data when sign in with username/password, 
   sign up with username/password and sign in with social auth  
   provider in Firestore database using AngularFirestore + AngularFirestoreDocument service */
-  SetUserData(user) {
+  SetUserData(user, displayName = "") {
     const userRef: AngularFirestoreDocument<any> = this.afs.doc(
       `users/${user.uid}`
     );
     const userData: User = {
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName,
+      displayName: displayName,
       photoURL: user.photoURL,
       emailVerified: user.emailVerified,
     };
