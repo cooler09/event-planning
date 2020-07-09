@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" *ngIf="authService.userData; else userLoggedIn">
   <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
     <mat-form-field appearance="fill">
       <mat-label>Event Name</mat-label>
@@ -62,3 +62,6 @@
     </button>
   </div>
 </div>
+<ng-template #userLoggedIn
+  ><div>Please log in to create an event.</div></ng-template
+>

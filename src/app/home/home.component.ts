@@ -4,6 +4,7 @@ import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { EventModel } from "../shared/models/event-model";
+import { AuthService } from "../shared/services/auth.service";
 
 @Component({
   selector: "app-home",
@@ -16,6 +17,7 @@ export class HomeComponent implements OnInit {
   hours: number[] = [];
 
   constructor(
+    public readonly authService: AuthService,
     private readonly firestore: AngularFirestore,
     private readonly router: Router
   ) {

@@ -55,7 +55,12 @@
       </a>
       <div class="dropdown-menu" aria-labelledby="profileDDL">
         <a class="dropdown-item" href="/dashboard">Profile</a>
-        <a class="dropdown-item" (click)="authService.SignOut()">Logout</a>
+        <a
+          class="dropdown-item"
+          style="cursor: pointer;"
+          (click)="authService.SignOut()"
+          >Logout</a
+        >
       </div>
     </div>
     <ng-template #userLoggedIn

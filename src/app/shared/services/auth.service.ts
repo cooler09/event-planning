@@ -41,7 +41,7 @@ export class AuthService {
       .signInWithEmailAndPassword(email, password)
       .then((result) => {
         this.ngZone.run(() => {
-          this.router.navigate(["dashboard"]);
+          this.router.navigate(["/"]);
         });
         this.SetUserData(result.user);
       })
@@ -55,6 +55,9 @@ export class AuthService {
     return this.afAuth
       .createUserWithEmailAndPassword(email, password)
       .then((result) => {
+        result.user.updateProfile({
+          displayName: displayName,
+        });
         /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
         this.SendVerificationMail();
@@ -104,7 +107,7 @@ export class AuthService {
       .signInWithPopup(provider)
       .then((result) => {
         this.ngZone.run(() => {
-          this.router.navigate(["dashboard"]);
+          this.router.navigate(["/"]);
         });
         this.SetUserData(result.user);
       })
@@ -116,17 +119,22 @@ export class AuthService {
   /* Setting up user data when sign in with username/password, 
   sign up with username/password and sign in with social auth  
   provider in Firestore database using AngularFirestore + AngularFirestoreDocument service */
-  SetUserData(user, displayName = "") {
+  SetUserData(user, displayName = null) {
     const userRef: AngularFirestoreDocument<any> = this.afs.doc(
       `users/${user.uid}`
     );
-    const userData: User = {
+    const userData = {
       uid: user.uid,
       email: user.email,
-      displayName: displayName,
       photoURL: user.photoURL,
       emailVerified: user.emailVerified,
     };
+    if (displayName) {
+      userData["displayName"] = displayName;
+    }
+    if (user.displayName) {
+      userData["displayName"] = user.displayName;
+    }
     return userRef.set(userData, {
       merge: true,
     });
