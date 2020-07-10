@@ -6,6 +6,7 @@ export class EventModel {
   startDate: Date;
   endDate: Date;
   maxAttendees: number;
+  userId: string;
   attendees: AttendeeModel[];
   constructor() {
     this.attendees = [];
