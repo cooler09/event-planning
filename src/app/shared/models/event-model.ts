@@ -8,7 +8,11 @@ export class EventModel {
   maxAttendees: number;
   userId: string;
   attendees: AttendeeModel[];
+  waitListEnabled: boolean;
+  waitList: AttendeeModel[];
   constructor() {
+    this.waitListEnabled = true;
     this.attendees = [];
+    this.waitList = [];
   }
 }
