@@ -1,4 +1,4 @@
-<div class="row" *ngIf="authService.userData; else userLoggedIn">
+<div class="row" *ngIf="authService.isLoggedIn; else userLoggedIn">
   <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
     <mat-form-field appearance="fill">
       <mat-label>Event Name</mat-label>
