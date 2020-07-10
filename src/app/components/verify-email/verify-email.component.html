@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-12">
+  <div class="col-12 text-center">
     <h3>Thank You for Registering</h3>
 
     <div class="formGroup" *ngIf="authService.userData as user">
@@ -14,23 +14,21 @@
     </div>
 
     <!-- Calling SendVerificationMail() method using authService Api -->
-    <div class="formGroup">
+
+    <div class="d-flex justify-content-center">
       <button
-        type="button"
-        class="btn btnPrimary"
+        class="m-3"
         (click)="authService.SendVerificationMail()"
+        mat-raised-button
+        color="primary"
       >
-        <i class="fas fa-redo-alt"></i>
         Resend Verification Email
       </button>
     </div>
-  </div>
-
-  <div class="redirectToLogin">
-    <span
-      >Go back to?<span class="redirect" routerLink="/sign-in">
-        Sign in</span
-      ></span
-    >
+    <div class="d-flex justify-content-center">
+      <span
+        >Go back to?<span class="btn" routerLink="/login"> Sign in</span></span
+      >
+    </div>
   </div>
 </div>
