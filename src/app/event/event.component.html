@@ -9,12 +9,13 @@
     <div *ngFor="let attendee of event.attendees">
       <p>{{ attendee.name }}</p>
     </div>
+    <h3>Wait List</h3>
+    <div *ngFor="let attendee of event.waitList">
+      <p>{{ attendee.name }}</p>
+    </div>
   </div>
   <div class="col-6">
-    <div
-      *ngIf="event.attendees.length < event.maxAttendees"
-      [formGroup]="formGroup"
-    >
+    <div [formGroup]="formGroup">
       <mat-form-field appearance="fill">
         <mat-label>Name</mat-label>
         <input matInput type="text" formControlName="name" />

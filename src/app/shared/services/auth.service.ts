@@ -27,6 +27,7 @@ export class AuthService {
         this.userData = user;
         localStorage.setItem("user", JSON.stringify(this.userData));
         JSON.parse(localStorage.getItem("user"));
+        this.SetUserData(user);
       } else {
         this.userData = null;
         localStorage.setItem("user", null);
@@ -43,7 +44,6 @@ export class AuthService {
         this.ngZone.run(() => {
           this.router.navigate(["/"]);
         });
-        this.SetUserData(result.user);
       })
       .catch((error) => {
         window.alert(error.message);
@@ -61,7 +61,6 @@ export class AuthService {
         /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
         this.SendVerificationMail();
-        this.SetUserData(result.user, displayName);
       })
       .catch((error) => {
         window.alert(error.message);
@@ -119,21 +118,31 @@ export class AuthService {
   /* Setting up user data when sign in with username/password, 
   sign up with username/password and sign in with social auth  
   provider in Firestore database using AngularFirestore + AngularFirestoreDocument service */
-  SetUserData(user, displayName = null) {
+  SetUserData(user) {
     const userRef: AngularFirestoreDocument<any> = this.afs.doc(
       `users/${user.uid}`
     );
-    const userData = {
-      uid: user.uid,
-      email: user.email,
-      photoURL: user.photoURL,
-      emailVerified: user.emailVerified,
-    };
-    if (displayName) {
-      userData["displayName"] = displayName;
+    const userData = {};
+
+    if (user.uid) {
+      userData["uid"] = user.uid;
+    }
+    if (user.email) {
+      userData["email"] = user.email;
+    }
+    if (user.photoURL) {
+      userData["photoURL"] = user.photoURL;
+    }
+    if (user.emailVerified !== undefined && user.emailVerified !== null) {
+      userData["emailVerified"] = user.emailVerified;
     }
     if (user.displayName) {
       userData["displayName"] = user.displayName;
+    }
+    if (Object.keys(userData).length > 0) {
+      return new Promise((resolve, reject) => {
+        resolve();
+      });
     }
     return userRef.set(userData, {
       merge: true,

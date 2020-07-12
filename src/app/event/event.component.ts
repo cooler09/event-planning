@@ -54,7 +54,22 @@ export class EventComponent implements OnInit, OnDestroy {
     let name = this.formGroup.get("name").value;
     let attendee = new AttendeeModel();
     attendee.name = name;
-    this.event.attendees.push(attendee);
-    this.firestore.doc<EventModel>(`/events/${this.id}`).set(this.event);
+    if (this.event.attendees.length < this.event.maxAttendees + 1) {
+      this.event.attendees.push(attendee);
+      this.firestore.doc(`/events/${this.id}`).set(
+        {
+          attendees: this.event.attendees.map((_) => Object.assign({}, _)),
+        },
+        { merge: true }
+      );
+    } else {
+      this.event.waitList.push(attendee);
+      this.firestore.doc(`/events/${this.id}`).set(
+        {
+          waitList: this.event.waitList.map((_) => Object.assign({}, _)),
+        },
+        { merge: true }
+      );
+    }
   }
 }
