@@ -1,5 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { AuthService } from "src/app/shared/services/auth.service";
+import { AngularFirestore } from "@angular/fire/firestore";
+import { Subscription } from "rxjs";
+import { User } from "src/app/shared/services/user";
 
 @Component({
   selector: "app-dashboard",
@@ -7,7 +10,29 @@ import { AuthService } from "src/app/shared/services/auth.service";
   styleUrls: ["./dashboard.component.scss"],
 })
 export class DashboardComponent implements OnInit {
-  constructor(public authService: AuthService) {}
+  subscriptions: Subscription[];
+  user: any;
+  constructor(
+    public readonly authService: AuthService,
+    private readonly firestore: AngularFirestore
+  ) {
+    this.subscriptions = [];
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.subscriptions.push(
+      this.firestore
+        .doc(`/users/${this.authService.userData.uid}`)
+        .valueChanges()
+        .subscribe((user) => {
+          console.log(user);
+          this.user = user;
+        })
+    );
+  }
+  onDestroy() {
+    this.subscriptions.forEach((_) => {
+      _.unsubscribe();
+    });
+  }
 }

@@ -1,5 +1,8 @@
 import { Component, OnInit } from "@angular/core";
-import { AngularFirestore } from "@angular/fire/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/firestore";
 import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -15,6 +18,7 @@ export class HomeComponent implements OnInit {
   formGroup: FormGroup;
   minutes: number[] = [];
   hours: number[] = [];
+  userRef: AngularFirestoreDocument<any>;
 
   constructor(
     public readonly authService: AuthService,
@@ -38,7 +42,9 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.userRef = this.firestore.doc(`users/${this.authService.userData.uid}`);
+  }
   createEvent() {
     let name = this.formGroup.get("name").value;
     let date = this.formGroup.get("date").value;
