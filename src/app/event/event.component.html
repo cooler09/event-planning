@@ -1,1 +1,28 @@
-<p>event works!</p>
+<div class="row">
+  <div *ngIf="event" class="col-12">
+    <h1>{{ event.name }}</h1>
+  </div>
+</div>
+<div class="row">
+  <div class="col-6">
+    <h3>Attendees</h3>
+    <div *ngFor="let attendee of event.attendees">
+      <p>{{ attendee.name }}</p>
+    </div>
+    <h3>Wait List</h3>
+    <div *ngFor="let attendee of event.waitList">
+      <p>{{ attendee.name }}</p>
+    </div>
+  </div>
+  <div class="col-6">
+    <div [formGroup]="formGroup">
+      <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <input matInput type="text" formControlName="name" />
+      </mat-form-field>
+      <button class="m-3" (click)="addAttendee()" mat-button color="primary">
+        Sign Up
+      </button>
+    </div>
+  </div>
+</div>

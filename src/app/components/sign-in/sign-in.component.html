@@ -1,0 +1,43 @@
+<div class="row">
+  <div class="col-12 col-sm-6 p-0">
+    <img src="assets\vb.jpg" class="img-fluid" alt="vb" />
+  </div>
+  <div class="col-12 col-sm-6 p-5 text-center">
+    <h3>Login</h3>
+
+    <mat-form-field class="mx-3 w-100" appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput type="text" #userName required />
+    </mat-form-field>
+    <mat-form-field class="mx-3 w-100" appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" #userPassword required />
+    </mat-form-field>
+
+    <button
+      class="m-3"
+      (click)="authService.SignIn(userName.value, userPassword.value)"
+      mat-raised-button
+      color="primary"
+    >
+      Log in
+    </button>
+
+    <div class="formGroup">
+      <span class="or"><span class="orInner">Or</span></span>
+    </div>
+
+    <app-social-login
+      (facebookClick)="authService.FacebookAuth()"
+      (googleClick)="authService.GoogleAuth()"
+    ></app-social-login>
+    <div>
+      <span class="btn" routerLink="/forgot-password">Forgot Password?</span>
+    </div>
+    <span
+      >Don't have an account?<span class="btn" routerLink="/register">
+        Sign Up</span
+      ></span
+    >
+  </div>
+</div>
