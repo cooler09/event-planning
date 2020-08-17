@@ -14,10 +14,16 @@
       <h3>Attendees</h3>
       <div *ngIf="event.attendees">
         <div
-          class="d-flex justify-content-center"
+          class="d-flex justify-content-between"
           *ngFor="let attendee of event.attendees"
         >
-          <p>{{ attendee.name }}</p>
+          <p>Name: {{ attendee.name }}</p>
+          <div *ngIf="attendee.positions && attendee.positions.length > 0">
+            Positions:
+            <div class="pl-2" *ngFor="let pos of attendee.positions">
+              {{ pos }}
+            </div>
+          </div>
 
           <button
             *ngIf="
@@ -35,8 +41,17 @@
       </div>
       <h3>Wait List</h3>
       <div *ngIf="event.waitList">
-        <div *ngFor="let attendee of event.waitList; let i = index">
+        <div
+          class="d-flex justify-content-between"
+          *ngFor="let attendee of event.waitList; let i = index"
+        >
           <p>{{ i + 1 }}. {{ attendee.name }}</p>
+          <div *ngIf="attendee.positions && attendee.positions.length > 0">
+            Positions:
+            <div class="pl-2" *ngFor="let pos of attendee.positions">
+              {{ pos }}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -46,6 +61,14 @@
           <mat-label>Name</mat-label>
           <input matInput type="text" formControlName="name" />
         </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Position</mat-label>
+          <mat-select formControlName="positions" multiple>
+            <mat-option *ngFor="let pos of positions" [value]="pos">{{
+              pos
+            }}</mat-option>
+          </mat-select>
+        </mat-form-field>
         <button
           mat-raised-button
           class="m-3"
@@ -54,21 +77,20 @@
         >
           Sign Up
         </button>
-      </div>
-
-      <div *ngIf="!isSignedUp()">
-        <div class="formGroup">
-          <span class="or"><span class="orInner">Or</span></span>
-        </div>
-        <div>
-          <button
-            mat-raised-button
-            class="m-3"
-            (click)="signUp()"
-            color="primary"
-          >
-            Sign Up With Account
-          </button>
+        <div *ngIf="!isSignedUp()">
+          <div class="formGroup">
+            <span class="or"><span class="orInner">Or</span></span>
+          </div>
+          <div>
+            <button
+              mat-raised-button
+              class="m-3"
+              (click)="signUp()"
+              color="primary"
+            >
+              Sign Up With Account
+            </button>
+          </div>
         </div>
       </div>
     </div>

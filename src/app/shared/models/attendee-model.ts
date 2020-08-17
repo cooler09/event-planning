@@ -3,4 +3,8 @@ export class AttendeeModel {
   userId: string;
   signUpDate: Date;
   name: string;
+  positions: string[];
+  constructor() {
+    this.positions = [];
+  }
 }

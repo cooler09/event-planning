@@ -21,6 +21,7 @@ export class EventComponent implements OnInit, OnDestroy {
   id: string;
   event: EventModel;
   formGroup: FormGroup;
+  positions: string[] = [];
   constructor(
     public readonly authService: AuthService,
     private readonly firestore: AngularFirestore,
@@ -28,7 +29,15 @@ export class EventComponent implements OnInit, OnDestroy {
   ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
+      positions: new FormControl("", [Validators.required]),
     });
+    this.positions = [
+      "Setter",
+      "Libero",
+      "Middle Hitter",
+      "Outside Hitter",
+      "Opposite Hitter",
+    ];
   }
   ngOnDestroy(): void {
     this.subscriptions.forEach((_) => {
@@ -104,11 +113,6 @@ export class EventComponent implements OnInit, OnDestroy {
   }
   isSignedUp() {
     let userId = this.authService.userData.uid;
-    console.log(
-      this.event.attendees.filter((item) => item.userId === userId).length >
-        0 ||
-        this.event.waitList.filter((item) => item.userId === userId).length > 0
-    );
     return (
       this.event.attendees.filter((item) => item.userId === userId).length >
         0 ||
@@ -140,6 +144,7 @@ export class EventComponent implements OnInit, OnDestroy {
       attendee.userId = this.authService.userData.uid;
       attendee.name = this.authService.userData.displayName;
       attendee.signUpDate = new Date();
+      attendee.positions = this.formGroup.get("positions").value;
       this.addAttendeeFirebase(attendee);
     }
   }
@@ -150,6 +155,7 @@ export class EventComponent implements OnInit, OnDestroy {
       attendee.id = uuid();
       attendee.name = name;
       attendee.signUpDate = new Date();
+      attendee.positions = this.formGroup.get("positions").value;
       this.addAttendeeFirebase(attendee);
 
       this.formGroup.get("name").setValue("");
