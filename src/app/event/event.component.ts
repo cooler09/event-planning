@@ -102,6 +102,19 @@ export class EventComponent implements OnInit, OnDestroy {
       ampm
     );
   }
+  isSignedUp() {
+    let userId = this.authService.userData.uid;
+    console.log(
+      this.event.attendees.filter((item) => item.userId === userId).length >
+        0 ||
+        this.event.waitList.filter((item) => item.userId === userId).length > 0
+    );
+    return (
+      this.event.attendees.filter((item) => item.userId === userId).length >
+        0 ||
+      this.event.waitList.filter((item) => item.userId === userId).length > 0
+    );
+  }
   removeAttendee(id: string) {
     this.event.attendees = this.event.attendees.filter(
       (item) => item.id !== id
@@ -120,12 +133,29 @@ export class EventComponent implements OnInit, OnDestroy {
       { merge: true }
     );
   }
+  signUp() {
+    if (this.authService.isLoggedIn) {
+      let attendee = new AttendeeModel();
+      attendee.id = uuid();
+      attendee.userId = this.authService.userData.uid;
+      attendee.name = this.authService.userData.displayName;
+      attendee.signUpDate = new Date();
+      this.addAttendeeFirebase(attendee);
+    }
+  }
   addAttendee() {
     let name = this.formGroup.get("name").value;
-    let attendee = new AttendeeModel();
-    attendee.id = uuid();
-    attendee.name = name;
-    attendee.signUpDate = new Date();
+    if (name) {
+      let attendee = new AttendeeModel();
+      attendee.id = uuid();
+      attendee.name = name;
+      attendee.signUpDate = new Date();
+      this.addAttendeeFirebase(attendee);
+
+      this.formGroup.get("name").setValue("");
+    }
+  }
+  private addAttendeeFirebase(attendee: AttendeeModel) {
     if (this.event.attendees.length < this.event.maxAttendees + 1) {
       this.event.attendees.push(attendee);
       this.firestore.doc(`/events/${this.id}`).set(
@@ -143,7 +173,5 @@ export class EventComponent implements OnInit, OnDestroy {
         { merge: true }
       );
     }
-
-    this.formGroup.get("name").setValue("");
   }
 }

@@ -46,9 +46,30 @@
           <mat-label>Name</mat-label>
           <input matInput type="text" formControlName="name" />
         </mat-form-field>
-        <button class="m-3" (click)="addAttendee()" mat-button color="primary">
+        <button
+          mat-raised-button
+          class="m-3"
+          (click)="addAttendee()"
+          color="primary"
+        >
           Sign Up
         </button>
+      </div>
+
+      <div *ngIf="!isSignedUp()">
+        <div class="formGroup">
+          <span class="or"><span class="orInner">Or</span></span>
+        </div>
+        <div>
+          <button
+            mat-raised-button
+            class="m-3"
+            (click)="signUp()"
+            color="primary"
+          >
+            Sign Up With Account
+          </button>
+        </div>
       </div>
     </div>
   </div>
