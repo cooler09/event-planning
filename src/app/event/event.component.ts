@@ -52,11 +52,13 @@ export class EventComponent implements OnInit, OnDestroy {
                   attendee.signUpDate = attendee.signUpDate.toDate();
                 return attendee;
               });
-              _.waitList = _.waitList.map((attendee) => {
-                if (attendee && attendee.signUpDate)
-                  attendee.signUpDate = attendee.signUpDate.toDate();
-                return attendee;
-              });
+              _.waitList = _.waitList
+                .map((attendee) => {
+                  if (attendee && attendee.signUpDate)
+                    attendee.signUpDate = attendee.signUpDate.toDate();
+                  return attendee;
+                })
+                .sort((a, b) => (a.signUpDate > b.signUpDate ? 1 : -1));
               this.event = _ as EventModel;
             })
         );

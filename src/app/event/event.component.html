@@ -22,7 +22,8 @@
           <button
             *ngIf="
               authService.isLoggedIn &&
-              authService.userData.uid === event.userId
+              (authService.userData.uid === event.userId ||
+                authService.userData.uid === attendee.userId)
             "
             (click)="removeAttendee(attendee.id)"
             mat-button
@@ -34,8 +35,8 @@
       </div>
       <h3>Wait List</h3>
       <div *ngIf="event.waitList">
-        <div *ngFor="let attendee of event.waitList">
-          <p>{{ attendee.name }}</p>
+        <div *ngFor="let attendee of event.waitList; let i = index">
+          <p>{{ i + 1 }}. {{ attendee.name }}</p>
         </div>
       </div>
     </div>
