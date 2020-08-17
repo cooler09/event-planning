@@ -1,8 +1,9 @@
 <div *ngIf="event; else spinner">
   <div class="row">
-    <div class="col-12 d-flex justify-content-center">
+    <div class="col-12 d-flex justify-content-center text-center p-3">
       <div>
         <h1>{{ event.name }}</h1>
+        <div>{{ event.location }}</div>
         <div>
           {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
         </div>

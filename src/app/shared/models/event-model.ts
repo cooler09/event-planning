@@ -3,6 +3,7 @@ import { AttendeeModel } from "./attendee-model";
 export class EventModel {
   id: string;
   name: string;
+  location: string;
   startDate: Date;
   endDate: Date;
   maxAttendees: number;

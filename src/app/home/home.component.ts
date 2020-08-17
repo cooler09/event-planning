@@ -27,6 +27,7 @@ export class HomeComponent implements OnInit {
   ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
+      location: new FormControl("", [Validators.required]),
       date: new FormControl("", [Validators.required]),
       startHour: new FormControl("", [Validators.required]),
       startMinute: new FormControl("", [Validators.required]),
@@ -47,6 +48,7 @@ export class HomeComponent implements OnInit {
   }
   createEvent() {
     let name = this.formGroup.get("name").value;
+    let location = this.formGroup.get("location").value;
     let date = this.formGroup.get("date").value;
     let startDate = new Date(date);
     startDate.setHours(this.formGroup.get("startHour").value);
@@ -58,6 +60,7 @@ export class HomeComponent implements OnInit {
     let eventModel = new EventModel();
     eventModel.id = id;
     eventModel.name = name;
+    eventModel.location = location;
     eventModel.startDate = startDate;
     eventModel.endDate = endDate;
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
