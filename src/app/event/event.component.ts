@@ -162,7 +162,7 @@ export class EventComponent implements OnInit, OnDestroy {
     }
   }
   private addAttendeeFirebase(attendee: AttendeeModel) {
-    if (this.event.attendees.length < this.event.maxAttendees + 1) {
+    if (this.event.attendees.length < this.event.maxAttendees) {
       this.event.attendees.push(attendee);
       this.firestore.doc(`/events/${this.id}`).set(
         {
