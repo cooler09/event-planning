@@ -41,7 +41,12 @@
     </ul>
     <div
       class="text-white dropdown"
-      *ngIf="authService.isLoggedIn; else userLoggedIn"
+      *ngIf="
+        authService.isLoggedIn &&
+          authService.userData &&
+          authService.userData.displayName;
+        else userLoggedIn
+      "
     >
       <a
         class="nav-link dropdown-toggle btn text-white"
