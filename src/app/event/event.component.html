@@ -13,8 +13,23 @@
     <div class="col-6">
       <h3>Attendees</h3>
       <div *ngIf="event.attendees">
-        <div *ngFor="let attendee of event.attendees">
+        <div
+          class="d-flex justify-content-center"
+          *ngFor="let attendee of event.attendees"
+        >
           <p>{{ attendee.name }}</p>
+
+          <button
+            *ngIf="
+              authService.isLoggedIn &&
+              authService.userData.uid === event.userId
+            "
+            (click)="removeAttendee(attendee.id)"
+            mat-button
+            color="primary"
+          >
+            Delete
+          </button>
         </div>
       </div>
       <h3>Wait List</h3>

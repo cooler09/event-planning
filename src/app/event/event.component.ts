@@ -3,6 +3,7 @@ import {
   AngularFirestore,
   DocumentChangeAction,
 } from "@angular/fire/firestore";
+import { v4 as uuid } from "uuid";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
 import { EventModel } from "../shared/models/event-model";
@@ -46,6 +47,16 @@ export class EventComponent implements OnInit, OnDestroy {
             .subscribe((_) => {
               _.startDate = _.startDate.toDate();
               _.endDate = _.endDate.toDate();
+              _.attendees = _.attendees.map((attendee) => {
+                if (attendee && attendee.signUpDate)
+                  attendee.signUpDate = attendee.signUpDate.toDate();
+                return attendee;
+              });
+              _.waitList = _.waitList.map((attendee) => {
+                if (attendee && attendee.signUpDate)
+                  attendee.signUpDate = attendee.signUpDate.toDate();
+                return attendee;
+              });
               this.event = _ as EventModel;
             })
         );
@@ -89,10 +100,30 @@ export class EventComponent implements OnInit, OnDestroy {
       ampm
     );
   }
+  removeAttendee(id: string) {
+    this.event.attendees = this.event.attendees.filter(
+      (item) => item.id !== id
+    );
+    if (this.event.waitListEnabled && this.event.waitList.length > 0) {
+      let nextUser = this.event.waitList
+        .sort((a, b) => (a.signUpDate < b.signUpDate ? 1 : -1))
+        .pop();
+      this.event.attendees.push(nextUser);
+    }
+    this.firestore.doc(`/events/${this.id}`).set(
+      {
+        attendees: this.event.attendees.map((_) => Object.assign({}, _)),
+        waitList: this.event.waitList.map((_) => Object.assign({}, _)),
+      },
+      { merge: true }
+    );
+  }
   addAttendee() {
     let name = this.formGroup.get("name").value;
     let attendee = new AttendeeModel();
+    attendee.id = uuid();
     attendee.name = name;
+    attendee.signUpDate = new Date();
     if (this.event.attendees.length < this.event.maxAttendees + 1) {
       this.event.attendees.push(attendee);
       this.firestore.doc(`/events/${this.id}`).set(
@@ -110,5 +141,7 @@ export class EventComponent implements OnInit, OnDestroy {
         { merge: true }
       );
     }
+
+    this.formGroup.get("name").setValue("");
   }
 }
