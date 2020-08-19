@@ -12,7 +12,7 @@ import { Router } from "@angular/router";
   providedIn: "root",
 })
 export class AuthService {
-  userData: any; // Save logged in user data
+  _userData: any; // Save logged in user data
 
   constructor(
     public afs: AngularFirestore, // Inject Firestore service
@@ -24,16 +24,27 @@ export class AuthService {
     logged in and setting up null when logged out */
     this.afAuth.authState.subscribe((user) => {
       if (user) {
-        this.userData = user;
+        this._userData = user;
         localStorage.setItem("user", JSON.stringify(this.userData));
         JSON.parse(localStorage.getItem("user"));
         this.SetUserData(user);
       } else {
-        this.userData = null;
+        this._userData = null;
         localStorage.setItem("user", null);
         JSON.parse(localStorage.getItem("user"));
       }
     });
+  }
+  get userData(): any {
+    if (this._userData) return this._userData;
+
+    let userData = JSON.parse(localStorage.getItem("user"));
+    if (userData) {
+      this._userData = userData;
+      return userData;
+    }
+
+    return null;
   }
 
   // Sign in with email/password
@@ -88,7 +99,7 @@ export class AuthService {
 
   // Returns true when user is logged in and email is verified
   get isLoggedIn(): boolean {
-    const user = JSON.parse(localStorage.getItem("user"));
+    let user = this.userData;
     return user !== null ? true : false;
   }
 

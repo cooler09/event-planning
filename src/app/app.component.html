@@ -77,5 +77,6 @@
   </div>
 </nav>
 <div class="container bg-light">
+  {{ message | async | json }}
   <router-outlet></router-outlet>
 </div>
