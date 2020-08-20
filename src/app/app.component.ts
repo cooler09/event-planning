@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { AuthService } from "./shared/services/auth.service";
 import { MessagingService } from "./shared/messaging.service";
+import { AngularFirestore } from "@angular/fire/firestore";
 
 @Component({
   selector: "app-root",
@@ -10,16 +11,25 @@ import { MessagingService } from "./shared/messaging.service";
 export class AppComponent implements OnInit {
   title = "event-planning";
   message;
+  notifications: any[];
   constructor(
     public readonly authService: AuthService,
-    private readonly messagingService: MessagingService
-  ) {}
+    private readonly messagingService: MessagingService,
+    private readonly angularFireDB: AngularFirestore
+  ) {
+    this.notifications = [];
+  }
   ngOnInit(): void {
     if (this.authService.isLoggedIn) {
-      console.log(this.authService.userData);
       this.messagingService.requestPermission(this.authService.userData.uid);
-      this.messagingService.receiveMessage();
+      this.messagingService.receiveMessage(this.authService.userData.uid);
       this.message = this.messagingService.currentMessage;
+      this.angularFireDB
+        .collection(`messages/${this.authService.userData.uid}/messages`)
+        .valueChanges()
+        .subscribe((_) => {
+          this.notifications = _;
+        });
     }
   }
 }

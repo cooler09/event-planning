@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
 import { AngularFireAuth } from "@angular/fire/auth";
 import { AngularFireMessaging } from "@angular/fire/messaging";
-import { mergeMapTo } from "rxjs/operators";
 import { take } from "rxjs/operators";
 import { BehaviorSubject } from "rxjs";
 import { AngularFirestore } from "@angular/fire/firestore";
+import { v4 as uuid } from "uuid";
 
 @Injectable()
 export class MessagingService {
@@ -40,6 +40,7 @@ export class MessagingService {
   requestPermission(userId) {
     this.angularFireMessaging.requestToken.subscribe(
       (token) => {
+        console.log(token);
         this.updateToken(userId, token);
       },
       (err) => {
@@ -51,10 +52,14 @@ export class MessagingService {
   /**
    * hook method when new notification received in foreground
    */
-  receiveMessage() {
-    console.log("receive msg");
+  receiveMessage(userId) {
     this.angularFireMessaging.messages.subscribe((payload) => {
-      console.log("new message received. ", payload);
+      let id = uuid();
+      this.angularFireDB
+        .doc(`messages/${userId}/messages/${id}`)
+        .set(payload, { merge: true })
+        .then();
+
       this.currentMessage.next(payload);
     });
   }

@@ -16,6 +16,8 @@ import { environment } from "src/environments/environment";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatNativeDateModule } from "@angular/material/core";
+import { MatIconModule } from "@angular/material/icon";
+import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
@@ -53,6 +55,8 @@ import { MessagingService } from "./shared/messaging.service";
     MatDatepickerModule,
     MatNativeDateModule,
     MatSlideToggleModule,
+    MatIconModule,
+    MatMenuModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFireAuthModule,
