@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
       this.messagingService.receiveMessage(this.authService.userData.uid);
       this.message = this.messagingService.currentMessage;
       this.angularFireDB
-        .collection(`messages/${this.authService.userData.uid}/messages`)
+        .collection(`users/${this.authService.userData.uid}/messages`)
         .valueChanges()
         .subscribe((_) => {
           this.notifications = _;
