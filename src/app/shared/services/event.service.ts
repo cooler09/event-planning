@@ -85,6 +85,11 @@ export class EventService {
         })
       );
   }
+  addEvent(event: EventModel) {
+    return this.firestore
+      .doc<EventModel>(`/events/${event.id}`)
+      .set({ ...event });
+  }
   getEvent(id: string): Observable<EventModel> {
     return this.firestore
       .doc<any>(`/events/${id}`)

@@ -9,9 +9,7 @@ export class EventModel {
   maxAttendees: number;
   userId: string;
   waitListEnabled: boolean;
-  comments: CommentModel[];
   constructor() {
     this.waitListEnabled = true;
-    this.comments = [];
   }
 }

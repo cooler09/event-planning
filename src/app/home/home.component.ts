@@ -69,11 +69,8 @@ export class HomeComponent implements OnInit {
     eventModel.waitListEnabled = this.formGroup.get("waitListEnabled").value;
     eventModel.userId = this.authService.userData.uid;
     let parsedEvent = Object.assign({}, eventModel);
-    delete parsedEvent["attendees"];
-    delete parsedEvent["waitList"];
-    delete parsedEvent["comments"];
     Promise.all([
-      this.firestore.doc<EventModel>(`/events/${id}`).set({ ...parsedEvent }),
+      this.eventService.addEvent(parsedEvent),
       ...[].map((attendee) =>
         this.eventService.addAttendeeFirebase(id, attendee)
       ),
