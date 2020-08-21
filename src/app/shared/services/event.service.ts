@@ -4,6 +4,7 @@ import { AngularFirestore } from "@angular/fire/firestore";
 import { AttendeeModel } from "../models/attendee-model";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { CommentModel } from "../models/comment-model";
 
 @Injectable({
   providedIn: "root",
@@ -70,6 +71,21 @@ export class EventService {
         })
       );
   }
+  getComments(eventId: string) {
+    return this.firestore
+      .collection(`/events/${eventId}/comments`)
+      .valueChanges()
+      .pipe(
+        map<any[], CommentModel[]>((snapshot) => {
+          return snapshot
+            .map((comment) => {
+              comment.createdDate = comment.createdDate.toDate();
+              return comment as CommentModel;
+            })
+            .sort((a, b) => (a.createdDate < b.createdDate ? 1 : -1));
+        })
+      );
+  }
   getEventAttendees(id: string): Observable<AttendeeModel[]> {
     return this.firestore
       .collection(`/events/${id}/attendees`)
@@ -86,9 +102,12 @@ export class EventService {
       );
   }
   addEvent(event: EventModel) {
+    return this.firestore.doc<EventModel>(`/events/${event.id}`).set(event);
+  }
+  addComment(eventId: string, comment: CommentModel) {
     return this.firestore
-      .doc<EventModel>(`/events/${event.id}`)
-      .set({ ...event });
+      .doc(`/events/${eventId}/comments/${comment.id}`)
+      .set({ ...comment });
   }
   getEvent(id: string): Observable<EventModel> {
     return this.firestore

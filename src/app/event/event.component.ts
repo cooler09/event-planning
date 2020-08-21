@@ -12,6 +12,7 @@ import { FormGroup, Validators, FormControl } from "@angular/forms";
 import { AttendeeModel } from "../shared/models/attendee-model";
 import DateHelper from "../shared/utils/date-helper";
 import { EventService } from "../shared/services/event.service";
+import { CommentModel } from "../shared/models/comment-model";
 
 @Component({
   selector: "app-event",
@@ -24,8 +25,10 @@ export class EventComponent implements OnInit, OnDestroy {
   event: EventModel;
   attendees: AttendeeModel[];
   waitlist: AttendeeModel[];
+  comments: CommentModel[];
   formGroup: FormGroup;
   positions: string[] = [];
+  commentText: string = "test";
   formatDate = DateHelper.formatDate;
   constructor(
     public readonly authService: AuthService,
@@ -38,6 +41,7 @@ export class EventComponent implements OnInit, OnDestroy {
     });
     this.attendees = [];
     this.waitlist = [];
+    this.comments = [];
     this.positions = [
       "Setter",
       "Libero",
@@ -66,21 +70,32 @@ export class EventComponent implements OnInit, OnDestroy {
           this.eventService
             .getEventAttendees(this.id)
             .subscribe((attendees) => {
-              console.log(attendees);
               this.attendees = attendees;
             })
         );
 
         this.subscriptions.push(
           this.eventService.getEventWaitlist(this.id).subscribe((waitlist) => {
-            console.log(waitlist);
             this.waitlist = waitlist;
+          })
+        );
+        this.subscriptions.push(
+          this.eventService.getComments(this.id).subscribe((comments) => {
+            this.comments = comments;
           })
         );
       })
     );
   }
-
+  comment() {
+    let comment = new CommentModel(
+      uuid(),
+      this.authService.userData.uid,
+      new Date(),
+      this.commentText
+    ).setUsername(this.authService.userData.displayName);
+    this.eventService.addComment(this.event.id, comment).then();
+  }
   isSignedUp() {
     return this.eventService.isSignedUp(
       this.attendees,

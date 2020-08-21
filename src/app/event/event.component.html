@@ -41,6 +41,8 @@
           </button>
         </div>
       </div>
+
+      <hr />
       <h3>Wait List</h3>
       <div *ngIf="waitlist">
         <div
@@ -94,6 +96,30 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col-12">
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>What's happening?</mat-label>
+          <textarea matInput type="text" [(ngModel)]="commentText"></textarea>
+        </mat-form-field>
+        <button
+          mat-raised-button
+          class="m-3"
+          (click)="comment()"
+          color="primary"
+        >
+          Add
+        </button>
+      </div>
+      <div *ngFor="let comment of comments">
+        <p>{{ comment.userName ? comment.userName : "Anonymous" }}</p>
+        <p>{{ comment.text }}</p>
+        <p>{{ formatDate(comment.createdDate) }}</p>
       </div>
     </div>
   </div>
