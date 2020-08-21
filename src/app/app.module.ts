@@ -19,6 +19,7 @@ import { MatNativeDateModule } from "@angular/material/core";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
+import { MatCardModule } from "@angular/material/card";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { SignInComponent } from "./components/sign-in/sign-in.component";
@@ -53,6 +54,7 @@ import { EventService } from "./shared/services/event.service";
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatCardModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatSlideToggleModule,

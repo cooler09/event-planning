@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import {
   AngularFirestore,
   AngularFirestoreDocument,
@@ -9,23 +9,40 @@ import { Router } from "@angular/router";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
 import { EventService } from "../shared/services/event.service";
+import { UserService } from "../shared/services/user.service";
+import {
+  Subscription,
+  Observable,
+  of,
+  fromEvent,
+  interval,
+  timer,
+  forkJoin,
+  merge,
+} from "rxjs";
+import { combineAll, map, concatAll, mergeAll, take } from "rxjs/operators";
+import DateHelper from "../shared/utils/date-helper";
 
 @Component({
   selector: "app-home",
   templateUrl: "./home.component.html",
   styleUrls: ["./home.component.scss"],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  subscriptions: Subscription[] = [];
   formGroup: FormGroup;
   minutes: number[] = [];
   hours: number[] = [];
-  userRef: AngularFirestoreDocument<any>;
+  userRef: any;
+  events: any = {};
+  objectValues = Object.values;
+  formatDate = DateHelper.formatDate;
 
   constructor(
     public readonly authService: AuthService,
-    private readonly firestore: AngularFirestore,
     private readonly router: Router,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly userService: UserService
   ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
@@ -46,7 +63,25 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userRef = this.firestore.doc(`users/${this.authService.userData.uid}`);
+    this.subscriptions.push(
+      this.userService
+        .getUserData(this.authService.userData.uid)
+        .subscribe((userData) => {
+          if (userData && userData.events) {
+            let obs = userData.events.map((event) => {
+              return this.eventService.getEvent(event);
+            });
+            merge<EventModel>(...obs).subscribe((event) => {
+              this.events[event.id] = event;
+            });
+          }
+        })
+    );
+  }
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((_) => {
+      _.unsubscribe();
+    });
   }
   createEvent() {
     let name = this.formGroup.get("name").value;

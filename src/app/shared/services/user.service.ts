@@ -9,16 +9,15 @@ import { Subscription } from "rxjs";
 export class UserService {
   subscriptions: Subscription[] = [];
 
-  constructor(
-    public readonly firestore: AngularFirestore,
-    public router: Router,
-    public ngZone: NgZone
-  ) {}
+  constructor(private readonly firestore: AngularFirestore) {}
 
   ngOnDestroy() {
     this.subscriptions.forEach((_) => {
       _.unsubscribe();
     });
+  }
+  getUserData(userId: string) {
+    return this.firestore.doc<any>(`/users/${userId}`).valueChanges();
   }
   addEvent(userData: any, eventId: string) {
     let userRef = this.firestore.doc(`/users/${userData.uid}`);

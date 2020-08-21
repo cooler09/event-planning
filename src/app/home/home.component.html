@@ -93,8 +93,27 @@
 <ng-template #userLoggedIn
   ><div>Please log in to create an event.</div></ng-template
 >
-<div *ngIf="authService.userData && authService.userData.events" class="row">
-  <div class="col-12">
-    <div *ngFor="let event of authService.userData.events">{{ event }}</div>
+<div *ngIf="events" class="row p-5">
+  <div class="col-12 text-center">
+    <h2>My Events</h2>
+    <div class="d-flex justify-content-around">
+      <mat-card class="shadow" *ngFor="let event of objectValues(events)">
+        <mat-card-header>
+          <mat-card-title>{{ event.name }}</mat-card-title>
+          <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div>
+            {{ formatDate(event.startDate) }} -
+            {{ formatDate(event.endDate) }}
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button [routerLink]="['/event/', event.id]">
+            View
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
   </div>
 </div>
