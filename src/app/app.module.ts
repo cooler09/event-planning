@@ -30,6 +30,7 @@ import { SocialLoginComponent } from "./shared/components/social-login/social-lo
 import { AngularFireMessagingModule } from "@angular/fire/messaging";
 import { AsyncPipe } from "@angular/common";
 import { MessagingService } from "./shared/messaging.service";
+import { EventService } from "./shared/services/event.service";
 
 @NgModule({
   declarations: [
@@ -62,7 +63,7 @@ import { MessagingService } from "./shared/messaging.service";
     AngularFireAuthModule,
     AngularFireMessagingModule,
   ],
-  providers: [AuthService, MessagingService, AsyncPipe],
+  providers: [AuthService, MessagingService, EventService, AsyncPipe],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

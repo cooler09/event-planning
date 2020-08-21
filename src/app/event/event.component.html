@@ -5,7 +5,8 @@
         <h1>{{ event.name }}</h1>
         <div>{{ event.location }}</div>
         <div>
-          {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
+          {{ formatDate(event.startDate) }} -
+          {{ formatDate(event.endDate) }}
         </div>
       </div>
     </div>
@@ -13,10 +14,10 @@
   <div class="row">
     <div class="col-6">
       <h3>Attendees</h3>
-      <div *ngIf="event.attendees">
+      <div *ngIf="attendees">
         <div
           class="d-flex justify-content-between"
-          *ngFor="let attendee of event.attendees"
+          *ngFor="let attendee of attendees"
         >
           <p>Name: {{ attendee.name }}</p>
           <div *ngIf="attendee.positions && attendee.positions.length > 0">
@@ -41,10 +42,10 @@
         </div>
       </div>
       <h3>Wait List</h3>
-      <div *ngIf="event.waitList">
+      <div *ngIf="waitlist">
         <div
           class="d-flex justify-content-between"
-          *ngFor="let attendee of event.waitList; let i = index"
+          *ngFor="let attendee of waitlist; let i = index"
         >
           <p>{{ i + 1 }}. {{ attendee.name }}</p>
           <div *ngIf="attendee.positions && attendee.positions.length > 0">
