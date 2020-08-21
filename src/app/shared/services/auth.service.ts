@@ -7,12 +7,14 @@ import {
   AngularFirestoreDocument,
 } from "@angular/fire/firestore";
 import { Router } from "@angular/router";
+import { Subscription } from "rxjs";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
   _userData: any; // Save logged in user data
+  subscriptions: Subscription[] = [];
 
   constructor(
     public afs: AngularFirestore, // Inject Firestore service
@@ -22,18 +24,36 @@ export class AuthService {
   ) {
     /* Saving user data in localstorage when 
     logged in and setting up null when logged out */
-    this.afAuth.authState.subscribe((user) => {
-      if (user) {
-        this._userData = user;
-        localStorage.setItem("user", JSON.stringify(this.userData));
-        JSON.parse(localStorage.getItem("user"));
-        this.SetUserData(user);
-      } else {
-        this._userData = null;
-        localStorage.setItem("user", null);
-        JSON.parse(localStorage.getItem("user"));
-      }
+    this.subscriptions.push(
+      this.afAuth.authState.subscribe((user) => {
+        if (user) {
+          this.subscriptions.push(
+            this.getUserData(user.uid).subscribe((_) => {
+              if (_) {
+                this.setLocalStorage(_);
+              } else {
+                this.afs
+                  .doc(`/users/${user.uid}`)
+                  .set(this.parseUserData(user), { merge: true });
+              }
+            })
+          );
+        } else {
+          this.setLocalStorage(null);
+        }
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((_) => {
+      _.unsubscribe();
     });
+  }
+  setLocalStorage(user) {
+    this._userData = user;
+    localStorage.setItem("user", user ? JSON.stringify(user) : user);
+    JSON.parse(localStorage.getItem("user"));
   }
   get userData(): any {
     if (this._userData) return this._userData;
@@ -119,45 +139,14 @@ export class AuthService {
         this.ngZone.run(() => {
           this.router.navigate(["/"]);
         });
-        this.SetUserData(result.user);
       })
       .catch((error) => {
         window.alert(error);
       });
   }
 
-  /* Setting up user data when sign in with username/password, 
-  sign up with username/password and sign in with social auth  
-  provider in Firestore database using AngularFirestore + AngularFirestoreDocument service */
-  SetUserData(user) {
-    const userRef: AngularFirestoreDocument<any> = this.afs.doc(
-      `users/${user.uid}`
-    );
-    const userData = {};
-
-    if (user.uid) {
-      userData["uid"] = user.uid;
-    }
-    if (user.email) {
-      userData["email"] = user.email;
-    }
-    if (user.photoURL) {
-      userData["photoURL"] = user.photoURL;
-    }
-    if (user.emailVerified !== undefined && user.emailVerified !== null) {
-      userData["emailVerified"] = user.emailVerified;
-    }
-    if (user.displayName) {
-      userData["displayName"] = user.displayName;
-    }
-    if (Object.keys(userData).length > 0) {
-      return new Promise((resolve, reject) => {
-        resolve();
-      });
-    }
-    return userRef.set(userData, {
-      merge: true,
-    });
+  getUserData(id: string) {
+    return this.afs.doc(`/users/${id}`).valueChanges();
   }
 
   // Sign out
@@ -166,5 +155,14 @@ export class AuthService {
       localStorage.removeItem("user");
       this.router.navigate(["login"]);
     });
+  }
+  private parseUserData(user) {
+    return {
+      uid: user.uid,
+      email: user.email,
+      photoURL: user.photoURL,
+      emailVerified: user.emailVerified,
+      displayName: user.displayName,
+    };
   }
 }

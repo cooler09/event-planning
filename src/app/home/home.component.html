@@ -93,3 +93,8 @@
 <ng-template #userLoggedIn
   ><div>Please log in to create an event.</div></ng-template
 >
+<div *ngIf="authService.userData && authService.userData.events" class="row">
+  <div class="col-12">
+    <div *ngFor="let event of authService.userData.events">{{ event }}</div>
+  </div>
+</div>

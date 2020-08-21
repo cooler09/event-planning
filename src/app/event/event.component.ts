@@ -13,6 +13,7 @@ import { AttendeeModel } from "../shared/models/attendee-model";
 import DateHelper from "../shared/utils/date-helper";
 import { EventService } from "../shared/services/event.service";
 import { CommentModel } from "../shared/models/comment-model";
+import { UserService } from "../shared/services/user.service";
 
 @Component({
   selector: "app-event",
@@ -33,7 +34,8 @@ export class EventComponent implements OnInit, OnDestroy {
   constructor(
     public readonly authService: AuthService,
     private readonly route: ActivatedRoute,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly userService: UserService
   ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
@@ -119,7 +121,11 @@ export class EventComponent implements OnInit, OnDestroy {
       )
         .setPositions(this.formGroup.get("positions").value)
         .setUserId(this.authService.userData.uid);
-      this.addWaitlistOrAttendee(this.event.id, attendee);
+      this.addWaitlistOrAttendee(
+        this.event.id,
+        this.authService.userData,
+        attendee
+      );
     }
   }
   addAttendee() {
@@ -128,12 +134,21 @@ export class EventComponent implements OnInit, OnDestroy {
       let attendee = new AttendeeModel(uuid(), name, new Date()).setPositions(
         this.formGroup.get("positions").value
       );
-      this.addWaitlistOrAttendee(this.event.id, attendee);
+      this.addWaitlistOrAttendee(
+        this.event.id,
+        this.authService.userData,
+        attendee
+      );
       this.formGroup.get("positions").setValue("");
       this.formGroup.get("name").setValue("");
     }
   }
-  private addWaitlistOrAttendee(eventId: string, attendee: AttendeeModel) {
+  private addWaitlistOrAttendee(
+    eventId: string,
+    userData: any,
+    attendee: AttendeeModel
+  ) {
+    this.userService.addEvent(userData, eventId);
     if (this.attendees.length < this.event.maxAttendees) {
       this.eventService.addAttendeeFirebase(eventId, attendee).then();
     } else {
