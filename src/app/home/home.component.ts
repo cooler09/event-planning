@@ -8,6 +8,7 @@ import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
+import { EventService } from "../shared/services/event.service";
 
 @Component({
   selector: "app-home",
@@ -23,7 +24,8 @@ export class HomeComponent implements OnInit {
   constructor(
     public readonly authService: AuthService,
     private readonly firestore: AngularFirestore,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly eventService: EventService
   ) {
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
@@ -66,11 +68,20 @@ export class HomeComponent implements OnInit {
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     eventModel.waitListEnabled = this.formGroup.get("waitListEnabled").value;
     eventModel.userId = this.authService.userData.uid;
-    this.firestore
-      .doc<EventModel>(`/events/${id}`)
-      .set({ ...eventModel })
-      .then(() => {
-        this.router.navigate(["event", id]);
-      });
+    let parsedEvent = Object.assign({}, eventModel);
+    delete parsedEvent["attendees"];
+    delete parsedEvent["waitList"];
+    delete parsedEvent["comments"];
+    Promise.all([
+      this.firestore.doc<EventModel>(`/events/${id}`).set({ ...parsedEvent }),
+      ...[].map((attendee) =>
+        this.eventService.addAttendeeFirebase(id, attendee)
+      ),
+      ...[].map((attendee) =>
+        this.eventService.addWaitlistFirebase(id, attendee)
+      ),
+    ]).then(() => {
+      this.router.navigate(["event", id]);
+    });
   }
 }

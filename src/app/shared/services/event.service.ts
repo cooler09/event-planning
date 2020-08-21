@@ -36,28 +36,22 @@ export class EventService {
       // remove them from the waitlist
       await this.removeWaitlistFromDB(event.id, nextUser.id).then();
       // add them to the attendee list
-      await this.addAttendeeToDB(event.id, nextUser).then();
+      await this.addAttendeeFirebase(event.id, nextUser).then();
     }
   }
   removeAttendeeFromDB(eventId: string, id: string) {
     return this.firestore.doc(`/events/${eventId}/attendees/${id}`).delete();
   }
-  addAttendeeToDB(eventId: string, attendee: AttendeeModel) {
-    return this.firestore
-      .doc(`/events/${eventId}/attendees/${attendee.id}`)
-      .set(attendee, { merge: true });
-  }
   removeWaitlistFromDB(eventId: string, id: string) {
     return this.firestore.doc(`/events/${eventId}/waitlist/${id}`).delete();
   }
   addAttendeeFirebase(eventId: string, attendee: AttendeeModel) {
-    console.log(attendee);
-    this.firestore
+    return this.firestore
       .doc(`/events/${eventId}/attendees/${attendee.id}`)
       .set({ ...attendee }, { merge: true });
   }
   addWaitlistFirebase(eventId: string, attendee: AttendeeModel) {
-    this.firestore
+    return this.firestore
       .doc(`/events/${eventId}/waitlist/${attendee.id}`)
       .set({ ...attendee }, { merge: true });
   }

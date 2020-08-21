@@ -120,9 +120,9 @@ export class EventComponent implements OnInit, OnDestroy {
   }
   private addWaitlistOrAttendee(eventId: string, attendee: AttendeeModel) {
     if (this.attendees.length < this.event.maxAttendees) {
-      this.eventService.addAttendeeFirebase(eventId, attendee);
+      this.eventService.addAttendeeFirebase(eventId, attendee).then();
     } else {
-      this.eventService.addWaitlistFirebase(eventId, attendee);
+      this.eventService.addWaitlistFirebase(eventId, attendee).then();
     }
   }
 }
