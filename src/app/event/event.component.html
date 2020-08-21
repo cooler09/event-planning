@@ -33,7 +33,7 @@
               (authService.userData.uid === event.userId ||
                 authService.userData.uid === attendee.userId)
             "
-            (click)="removeAttendee(attendee.id)"
+            (click)="removeAttendee(attendee)"
             mat-button
             color="primary"
           >
@@ -102,7 +102,7 @@
   <hr />
   <div class="row">
     <div class="col-12">
-      <div>
+      <div *ngIf="authService.isLoggedIn">
         <mat-form-field appearance="fill">
           <mat-label>What's happening?</mat-label>
           <textarea matInput type="text" [(ngModel)]="commentText"></textarea>

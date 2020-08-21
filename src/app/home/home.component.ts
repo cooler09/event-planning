@@ -34,7 +34,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   minutes: number[] = [];
   hours: number[] = [];
   userRef: any;
-  events: any = {};
+  eventRef: any = {};
+  events: EventModel[] = [];
+
   objectValues = Object.values;
   formatDate = DateHelper.formatDate;
 
@@ -72,7 +74,8 @@ export class HomeComponent implements OnInit, OnDestroy {
               return this.eventService.getEvent(event);
             });
             merge<EventModel>(...obs).subscribe((event) => {
-              this.events[event.id] = event;
+              this.eventRef[event.id] = event;
+              this.events = Object.values(this.eventRef) as EventModel[];
             });
           }
         })

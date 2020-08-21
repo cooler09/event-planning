@@ -105,11 +105,13 @@ export class EventComponent implements OnInit, OnDestroy {
       this.authService.userData.uid
     );
   }
-  removeAttendee(id: string) {
+  removeAttendee(attendee: AttendeeModel) {
     this.eventService
-      .removeAttendee(this.event, id, this.waitlist)
+      .removeAttendee(this.event, attendee.id, this.waitlist)
       .then((_) => {
-        console.log(`user ${id} was removed`);
+        this.userService
+          .removeEvent(attendee.userId, this.event.id)
+          .then(() => {});
       });
   }
   signUp() {

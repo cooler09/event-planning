@@ -97,7 +97,7 @@
   <div class="col-12 text-center">
     <h2>My Events</h2>
     <div class="d-flex justify-content-around">
-      <mat-card class="shadow" *ngFor="let event of objectValues(events)">
+      <mat-card class="shadow" *ngFor="let event of events">
         <mat-card-header>
           <mat-card-title>{{ event.name }}</mat-card-title>
           <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>

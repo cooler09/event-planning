@@ -1,6 +1,5 @@
-import { Injectable, NgZone } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
-import { Router } from "@angular/router";
 import { Subscription } from "rxjs";
 
 @Injectable({
@@ -18,6 +17,25 @@ export class UserService {
   }
   getUserData(userId: string) {
     return this.firestore.doc<any>(`/users/${userId}`).valueChanges();
+  }
+  async removeEvent(userId: string, eventId: string): Promise<void> {
+    let userRef = this.firestore.doc(`/users/${userId}`);
+    let doc = await userRef.get().toPromise();
+    let newEventList = [];
+    if (!doc.exists) {
+      return Promise.resolve();
+    }
+    if (doc.data() && doc.data().events) {
+      newEventList = doc.data().events.filter((event) => {
+        return event !== eventId;
+      });
+    }
+    return await userRef.set(
+      {
+        events: newEventList,
+      },
+      { merge: true }
+    );
   }
   addEvent(userData: any, eventId: string) {
     let userRef = this.firestore.doc(`/users/${userData.uid}`);
