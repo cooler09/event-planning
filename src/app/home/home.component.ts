@@ -73,10 +73,12 @@ export class HomeComponent implements OnInit, OnDestroy {
             let obs = userData.events.map((event) => {
               return this.eventService.getEvent(event);
             });
-            merge<EventModel>(...obs).subscribe((event) => {
-              this.eventRef[event.id] = event;
-              this.events = Object.values(this.eventRef) as EventModel[];
-            });
+            this.subscriptions.push(
+              merge<EventModel>(...obs).subscribe((event) => {
+                this.eventRef[event.id] = event;
+                this.events = Object.values(this.eventRef) as EventModel[];
+              })
+            );
           }
         })
     );
