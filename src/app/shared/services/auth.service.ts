@@ -1,12 +1,8 @@
 import { Injectable, NgZone } from "@angular/core";
-import { User } from "../services/user";
 import { auth } from "firebase/app";
 import { AngularFireAuth } from "@angular/fire/auth";
-import {
-  AngularFirestore,
-  AngularFirestoreDocument,
-} from "@angular/fire/firestore";
-import { Router } from "@angular/router";
+import { AngularFirestore } from "@angular/fire/firestore";
+import { Router, ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
 
 @Injectable({
@@ -20,6 +16,7 @@ export class AuthService {
     public afs: AngularFirestore, // Inject Firestore service
     public afAuth: AngularFireAuth, // Inject Firebase auth service
     public router: Router,
+    private readonly route: ActivatedRoute,
     public ngZone: NgZone // NgZone service to remove outside scope warning
   ) {
     /* Saving user data in localstorage when 
@@ -44,7 +41,6 @@ export class AuthService {
       })
     );
   }
-
   ngOnDestroy() {
     this.subscriptions.forEach((_) => {
       _.unsubscribe();
@@ -85,7 +81,8 @@ export class AuthService {
       .signInWithEmailAndPassword(email, password)
       .then((result) => {
         this.ngZone.run(() => {
-          this.router.navigate(["/"]);
+          let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+          this.router.navigate([returnUrl]);
         });
       })
       .catch((error) => {
@@ -149,7 +146,8 @@ export class AuthService {
       .signInWithPopup(provider)
       .then((result) => {
         this.ngZone.run(() => {
-          this.router.navigate(["/"]);
+          let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+          this.router.navigate([returnUrl]);
         });
       })
       .catch((error) => {
@@ -165,7 +163,6 @@ export class AuthService {
   SignOut() {
     return this.afAuth.signOut().then(() => {
       localStorage.removeItem("user");
-      this.router.navigate(["login"]);
     });
   }
   private parseUserData(user) {
