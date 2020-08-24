@@ -4,7 +4,7 @@ import {
   DocumentChangeAction,
 } from "@angular/fire/firestore";
 import { v4 as uuid } from "uuid";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription } from "rxjs";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
@@ -34,11 +34,11 @@ export class EventComponent implements OnInit, OnDestroy {
   constructor(
     public readonly authService: AuthService,
     private readonly route: ActivatedRoute,
+    public readonly router: Router,
     private readonly eventService: EventService,
     private readonly userService: UserService
   ) {
     this.formGroup = new FormGroup({
-      name: new FormControl("", [Validators.required]),
       positions: new FormControl("", [Validators.required]),
     });
     this.attendees = [];
@@ -138,21 +138,6 @@ export class EventComponent implements OnInit, OnDestroy {
       this.authService.SignUpAnonymously().then((_) => {
         console.log(_);
       });
-    }
-  }
-  addAttendee() {
-    let name = this.formGroup.get("name").value;
-    if (name) {
-      let attendee = new AttendeeModel(uuid(), name, new Date()).setPositions(
-        this.formGroup.get("positions").value
-      );
-      this.addWaitlistOrAttendee(
-        this.event.id,
-        this.authService.userData,
-        attendee
-      );
-      this.formGroup.get("positions").setValue("");
-      this.formGroup.get("name").setValue("");
     }
   }
   private addWaitlistOrAttendee(

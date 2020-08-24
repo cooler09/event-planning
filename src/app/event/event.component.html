@@ -59,44 +59,52 @@
         </div>
       </div>
     </div>
-    <div class="col-6">
-      <div [formGroup]="formGroup">
-        <mat-form-field appearance="fill">
-          <mat-label>Name</mat-label>
-          <input matInput type="text" formControlName="name" />
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Position</mat-label>
-          <mat-select formControlName="positions" multiple>
-            <mat-option *ngFor="let pos of positions" [value]="pos">{{
-              pos
-            }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <button
-          mat-raised-button
-          class="m-3"
-          (click)="signUpAsGuest()"
-          color="primary"
-        >
-          Sign Up As Guest
-        </button>
-        <div *ngIf="!isSignedUp()">
+    <div *ngIf="!isSignedUp()" class="col-6">
+      <div *ngIf="authService.isLoggedIn; else signIn">
+        <div *ngIf="!isSignedUp()" [formGroup]="formGroup">
+          <mat-form-field appearance="fill">
+            <mat-label>Position</mat-label>
+            <mat-select formControlName="positions" multiple>
+              <mat-option *ngFor="let pos of positions" [value]="pos">{{
+                pos
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-raised-button
+            class="m-3"
+            (click)="signUp()"
+            color="primary"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+      <ng-template #signIn>
+        <p>Login in order to sign up for the event.</p>
+        <div class="d-flex justify-content-center align-items-center">
+          <button
+            mat-raised-button
+            class="m-3"
+            (click)="signUpAsGuest()"
+            color="primary"
+          >
+            Sign Up As Guest
+          </button>
           <div class="formGroup">
             <span class="or"><span class="orInner">Or</span></span>
           </div>
-          <div>
-            <button
-              mat-raised-button
-              class="m-3"
-              (click)="signUp()"
-              color="primary"
-            >
-              Sign Up With Account
-            </button>
-          </div>
+          <button
+            mat-raised-button
+            class="m-3"
+            [routerLink]="['/login']"
+            [queryParams]="{ returnUrl: router.url }"
+            color="primary"
+          >
+            Login
+          </button>
         </div>
-      </div>
+      </ng-template>
     </div>
   </div>
   <hr />
