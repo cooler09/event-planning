@@ -41,12 +41,7 @@
     </ul>
     <div
       class="text-white dropdown"
-      *ngIf="
-        authService.isLoggedIn &&
-          authService.userData &&
-          authService.userData.displayName;
-        else userLoggedIn
-      "
+      *ngIf="authService.isLoggedIn; else userLoggedIn"
     >
       <div class="d-flex justify-content-between">
         <button

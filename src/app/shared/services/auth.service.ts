@@ -11,6 +11,7 @@ import { Subscription } from "rxjs";
 export class AuthService {
   _userData: any; // Save logged in user data
   subscriptions: Subscription[] = [];
+  userDataSubscriptions: Subscription[] = [];
 
   constructor(
     public afs: AngularFirestore, // Inject Firestore service
@@ -24,7 +25,7 @@ export class AuthService {
     this.subscriptions.push(
       this.afAuth.authState.subscribe((user) => {
         if (user) {
-          this.subscriptions.push(
+          this.userDataSubscriptions.push(
             this.getUserData(user.uid).subscribe((_) => {
               if (_) {
                 this.setLocalStorage(_);
@@ -162,6 +163,10 @@ export class AuthService {
   // Sign out
   SignOut() {
     return this.afAuth.signOut().then(() => {
+      this.userDataSubscriptions.forEach((_) => {
+        _.unsubscribe();
+      });
+      this._userData = null;
       localStorage.removeItem("user");
     });
   }

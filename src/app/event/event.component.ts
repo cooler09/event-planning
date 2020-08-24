@@ -112,9 +112,7 @@ export class EventComponent implements OnInit, OnDestroy {
     this.eventService
       .removeAttendee(this.event, attendee.id, this.waitlist)
       .then((_) => {
-        this.userService
-          .removeEvent(attendee.userId, this.event.id)
-          .then(() => {});
+        this.userService.removeEvent(attendee.userId, this.event.id).then();
       });
   }
   signUp() {
@@ -131,6 +129,7 @@ export class EventComponent implements OnInit, OnDestroy {
         this.authService.userData,
         attendee
       );
+      this.formGroup.reset();
     }
   }
   signUpAsGuest() {
