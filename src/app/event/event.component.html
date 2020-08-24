@@ -76,10 +76,10 @@
         <button
           mat-raised-button
           class="m-3"
-          (click)="addAttendee()"
+          (click)="signUpAsGuest()"
           color="primary"
         >
-          Sign Up
+          Sign Up As Guest
         </button>
         <div *ngIf="!isSignedUp()">
           <div class="formGroup">
@@ -116,11 +116,18 @@
           Add
         </button>
       </div>
-      <div *ngFor="let comment of comments">
-        <p>{{ comment.userName ? comment.userName : "Anonymous" }}</p>
-        <p>{{ comment.text }}</p>
-        <p>{{ formatDate(comment.createdDate) }}</p>
-      </div>
+      <mat-card class="shadow m-3" *ngFor="let comment of comments">
+        <mat-card-header>
+          <mat-card-title>{{
+            comment.userName ? comment.userName : "Anonymous"
+          }}</mat-card-title>
+          <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ comment.text }}</p>
+          <p>{{ formatDate(comment.createdDate) }}</p>
+        </mat-card-content>
+      </mat-card>
     </div>
   </div>
 </div>
