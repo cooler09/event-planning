@@ -1,8 +1,4 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import {
-  AngularFirestore,
-  AngularFirestoreDocument,
-} from "@angular/fire/firestore";
 import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -10,17 +6,7 @@ import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
 import { EventService } from "../shared/services/event.service";
 import { UserService } from "../shared/services/user.service";
-import {
-  Subscription,
-  Observable,
-  of,
-  fromEvent,
-  interval,
-  timer,
-  forkJoin,
-  merge,
-} from "rxjs";
-import { combineAll, map, concatAll, mergeAll, take } from "rxjs/operators";
+import { Subscription, merge } from "rxjs";
 import DateHelper from "../shared/utils/date-helper";
 
 @Component({
@@ -65,28 +51,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.userService
-        .getUserData(this.authService.userData.uid)
-        .subscribe((userData) => {
-          if (userData && userData.events) {
-            if (userData.events.length > 0) {
-              let obs = userData.events.map((event) => {
-                return this.eventService.getEvent(event);
-              });
-              this.subscriptions.push(
-                merge<EventModel>(...obs).subscribe((event) => {
-                  this.eventRef[event.id] = event;
-                  this.events = Object.values(this.eventRef) as EventModel[];
-                })
-              );
-            } else {
-              this.eventRef = {};
-              this.events = Object.values(this.eventRef) as EventModel[];
+    if (this.authService.isLoggedIn) {
+      this.subscriptions.push(
+        this.userService
+          .getUserData(this.authService.userData.uid)
+          .subscribe((userData) => {
+            if (userData && userData.events) {
+              if (userData.events.length > 0) {
+                let obs = userData.events.map((event) => {
+                  return this.eventService.getEvent(event);
+                });
+                this.subscriptions.push(
+                  merge<EventModel>(...obs).subscribe((event) => {
+                    this.eventRef[event.id] = event;
+                    this.events = Object.values(this.eventRef) as EventModel[];
+                  })
+                );
+              } else {
+                this.eventRef = {};
+                this.events = Object.values(this.eventRef) as EventModel[];
+              }
             }
-          }
-        })
-    );
+          })
+      );
+    }
   }
   ngOnDestroy(): void {
     this.subscriptions.forEach((_) => {
