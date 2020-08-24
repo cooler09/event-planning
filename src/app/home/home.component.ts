@@ -70,15 +70,20 @@ export class HomeComponent implements OnInit, OnDestroy {
         .getUserData(this.authService.userData.uid)
         .subscribe((userData) => {
           if (userData && userData.events) {
-            let obs = userData.events.map((event) => {
-              return this.eventService.getEvent(event);
-            });
-            this.subscriptions.push(
-              merge<EventModel>(...obs).subscribe((event) => {
-                this.eventRef[event.id] = event;
-                this.events = Object.values(this.eventRef) as EventModel[];
-              })
-            );
+            if (userData.events.length > 0) {
+              let obs = userData.events.map((event) => {
+                return this.eventService.getEvent(event);
+              });
+              this.subscriptions.push(
+                merge<EventModel>(...obs).subscribe((event) => {
+                  this.eventRef[event.id] = event;
+                  this.events = Object.values(this.eventRef) as EventModel[];
+                })
+              );
+            } else {
+              this.eventRef = {};
+              this.events = Object.values(this.eventRef) as EventModel[];
+            }
           }
         })
     );

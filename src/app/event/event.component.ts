@@ -99,10 +99,13 @@ export class EventComponent implements OnInit, OnDestroy {
     this.eventService.addComment(this.event.id, comment).then();
   }
   isSignedUp() {
-    return this.eventService.isSignedUp(
-      this.attendees,
-      this.waitlist,
-      this.authService.userData.uid
+    return (
+      this.authService.isLoggedIn &&
+      this.eventService.isSignedUp(
+        this.attendees,
+        this.waitlist,
+        this.authService.userData.uid
+      )
     );
   }
   removeAttendee(attendee: AttendeeModel) {
@@ -128,6 +131,13 @@ export class EventComponent implements OnInit, OnDestroy {
         this.authService.userData,
         attendee
       );
+    }
+  }
+  signUpAsGuest() {
+    if (!this.authService.isLoggedIn) {
+      this.authService.SignUpAnonymously().then((_) => {
+        console.log(_);
+      });
     }
   }
   addAttendee() {

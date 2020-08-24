@@ -67,6 +67,18 @@ export class AuthService {
     return null;
   }
 
+  SignUpAnonymously() {
+    return this.afAuth
+      .signInAnonymously()
+      .then((result) => {
+        result.user.updateProfile({
+          displayName: "Anonymous",
+        });
+      })
+      .catch((error) => {
+        window.alert(error.message);
+      });
+  }
   // Sign in with email/password
   SignIn(email, password) {
     return this.afAuth
