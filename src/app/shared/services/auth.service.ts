@@ -27,7 +27,7 @@ export class AuthService {
         if (user) {
           this.userDataSubscriptions.push(
             this.getUserData(user.uid).subscribe((_) => {
-              if (_) {
+              if (_ && _["uid"]) {
                 this.setLocalStorage(_);
               } else {
                 this.afs
@@ -63,14 +63,33 @@ export class AuthService {
 
     return null;
   }
+  UpgradeAccount(email: string, password: string) {
+    var credential = auth.EmailAuthProvider.credential(email, password);
+    var fbProvider = new auth.FacebookAuthProvider();
+    this.afAuth.signInWithPopup(fbProvider).then((data) => {});
 
-  SignUpAnonymously() {
+    // 2. Links the credential to the currently signed in user
+    // (the anonymous user).
+    this.afAuth.currentUser.then((user) => {
+      user.linkWithCredential(credential).then(
+        function (user) {
+          console.log("Anonymous account successfully upgraded", user);
+        },
+        function (error) {
+          console.log("Error upgrading anonymous account", error);
+        }
+      );
+    });
+  }
+  SignUpAnonymously(displayName: string) {
     return this.afAuth
       .signInAnonymously()
       .then((result) => {
-        result.user.updateProfile({
-          displayName: "Anonymous",
-        });
+        result.user
+          .updateProfile({
+            displayName: displayName ? displayName : "Anonymous",
+          })
+          .then();
       })
       .catch((error) => {
         window.alert(error.message);
@@ -134,26 +153,104 @@ export class AuthService {
   }
 
   // Sign in with Google
-  GoogleAuth() {
-    return this.AuthLogin(new auth.GoogleAuthProvider());
+  GoogleAuth(migrateUser: string = null) {
+    return this.AuthLogin(new auth.GoogleAuthProvider(), migrateUser);
   }
-  FacebookAuth() {
-    return this.AuthLogin(new auth.FacebookAuthProvider());
+  FacebookAuth(migrateUser: string = null) {
+    return this.AuthLogin(new auth.FacebookAuthProvider(), migrateUser);
   }
 
   // Auth logic to run auth providers
-  AuthLogin(provider) {
+  AuthLogin(provider, migrateUser: string = null) {
     return this.afAuth
       .signInWithPopup(provider)
       .then((result) => {
-        this.ngZone.run(() => {
-          let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
-          this.router.navigate([returnUrl]);
-        });
+        if (migrateUser) {
+          this.migrateUser(migrateUser, result.user.uid).then(() => {
+            this.ngZone.run(() => {
+              let returnUrl =
+                this.route.snapshot.queryParams["returnUrl"] || "/";
+              this.router.navigate([returnUrl]);
+            });
+          });
+        } else {
+          this.ngZone.run(() => {
+            let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+            this.router.navigate([returnUrl]);
+          });
+        }
       })
       .catch((error) => {
         window.alert(error);
       });
+  }
+  private async migrateUser(refUserId: string, destUserId): Promise<void> {
+    let doc = await this.afs.doc(`/users/${refUserId}`).get().toPromise();
+    if (doc.exists) {
+      let data = doc.data();
+      if (data && data.events) {
+        await this.afs.doc(`/users/${destUserId}`).set(
+          {
+            events: data.events,
+          },
+          { merge: true }
+        );
+        await this.afs.doc(`/users/${refUserId}`).delete();
+
+        let promises = data.events.forEach((event) => {
+          return new Promise(async () => {
+            console.log(event);
+            let attendeeRef = await this.afs
+              .doc(`/events/${event}/attendees/${refUserId}`)
+              .get()
+              .toPromise();
+            console.log("attendee", attendeeRef);
+            let waitlistRef = await this.afs
+              .doc(`/events/${event}/waitlist/${refUserId}`)
+              .get()
+              .toPromise();
+            console.log("waitlist");
+            let commentRef = await this.afs
+              .doc(`/events/${event}/comments/${refUserId}`)
+              .get()
+              .toPromise();
+            console.log("comments");
+            if (attendeeRef.exists) {
+              console.log("attendeeRef");
+              await this.afs
+                .doc(`/events/${event}/attendees/${destUserId}`)
+                .set({
+                  ...attendeeRef,
+                  userId: destUserId,
+                });
+              console.log("donealdsfjk");
+            }
+            if (waitlistRef.exists) {
+              console.log("waitlistRef");
+              await this.afs
+                .doc(`/events/${event}/waitlist/${destUserId}`)
+                .set({
+                  ...waitlistRef,
+                  userId: destUserId,
+                })
+                .then();
+            }
+            if (commentRef.exists) {
+              await this.afs
+                .doc(`/events/${event}/comments/${destUserId}`)
+                .set({
+                  ...commentRef,
+                  userId: destUserId,
+                })
+                .then();
+            }
+          });
+        });
+        await Promise.all(promises);
+        console.log("done");
+      }
+    }
+    return Promise.resolve();
   }
 
   getUserData(id: string) {
