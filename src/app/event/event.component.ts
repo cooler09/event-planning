@@ -14,6 +14,8 @@ import DateHelper from "../shared/utils/date-helper";
 import { EventService } from "../shared/services/event.service";
 import { CommentModel } from "../shared/models/comment-model";
 import { UserService } from "../shared/services/user.service";
+import { MatDialog } from "@angular/material/dialog";
+import { GuestDialogComponent } from "../shared/components/guest-dialog/guest-dialog.component";
 
 @Component({
   selector: "app-event",
@@ -36,7 +38,8 @@ export class EventComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     public readonly router: Router,
     private readonly eventService: EventService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    public readonly dialog: MatDialog
   ) {
     this.formGroup = new FormGroup({
       positions: new FormControl("", [Validators.required]),
@@ -133,11 +136,18 @@ export class EventComponent implements OnInit, OnDestroy {
     }
   }
   signUpAsGuest() {
-    if (!this.authService.isLoggedIn) {
-      this.authService.SignUpAnonymously().then((_) => {
-        console.log(_);
-      });
-    }
+    const dialogRef = this.dialog.open(GuestDialogComponent, {
+      width: "500px",
+      data: { displayName: "" },
+    });
+
+    this.subscriptions.push(
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result && result.displayName) {
+          this.authService.SignUpAnonymously(result.displayName).then();
+        }
+      })
+    );
   }
   private addWaitlistOrAttendee(
     eventId: string,

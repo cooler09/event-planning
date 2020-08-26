@@ -1,4 +1,18 @@
 <div class="row" *ngIf="authService.isLoggedIn; else userLoggedIn">
+  <div class="col-12" *ngIf="!authService.userData.email">
+    <p>
+      Warning: You're using a guest account. If you'd like to Upgrade please
+
+      <button
+        class="m-3"
+        (click)="authService.GoogleAuth(authService.userData.uid)"
+        mat-raised-button
+        color="primary"
+      >
+        Click here
+      </button>
+    </p>
+  </div>
   <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
     <div>
       <mat-form-field class="m-2" appearance="fill">

@@ -20,6 +20,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
 import { MatCardModule } from "@angular/material/card";
+import { MatDialogModule } from "@angular/material/dialog";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { SignInComponent } from "./components/sign-in/sign-in.component";
@@ -32,6 +33,8 @@ import { AngularFireMessagingModule } from "@angular/fire/messaging";
 import { AsyncPipe } from "@angular/common";
 import { MessagingService } from "./shared/messaging.service";
 import { EventService } from "./shared/services/event.service";
+import { GuestDialogComponent } from './shared/components/guest-dialog/guest-dialog.component';
+import { LoginComponent } from './shared/components/login/login.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +47,8 @@ import { EventService } from "./shared/services/event.service";
     ForgotPasswordComponent,
     VerifyEmailComponent,
     SocialLoginComponent,
+    GuestDialogComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +63,7 @@ import { EventService } from "./shared/services/event.service";
     MatDatepickerModule,
     MatNativeDateModule,
     MatSlideToggleModule,
+    MatDialogModule,
     MatIconModule,
     MatMenuModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
