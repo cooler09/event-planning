@@ -107,10 +107,20 @@
 <ng-template #userLoggedIn
   ><div>Please log in to create an event.</div></ng-template
 >
+<div *ngIf="friends.length > 0" class="row p-5">
+  <div class="col-12 text-center">
+    <h2>Friends</h2>
+    <div class="d-flex justify-content-around flex-wrap">
+      <div *ngFor="let friend of friends">
+        <p>{{ friend.displayName }}</p>
+      </div>
+    </div>
+  </div>
+</div>
 <div *ngIf="events" class="row p-5">
   <div class="col-12 text-center">
     <h2>My Events</h2>
-    <div class="d-flex justify-content-around">
+    <div class="d-flex justify-content-around flex-wrap">
       <mat-card class="shadow" *ngFor="let event of events">
         <mat-card-header>
           <mat-card-title>{{ event.name }}</mat-card-title>

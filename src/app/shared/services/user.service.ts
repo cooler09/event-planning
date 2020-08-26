@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
-import { Subscription } from "rxjs";
+import { Subscription, Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root",
@@ -15,8 +16,18 @@ export class UserService {
       _.unsubscribe();
     });
   }
-  getUserData(userId: string) {
-    return this.firestore.doc<any>(`/users/${userId}`).valueChanges();
+  getUserData<T>(userId: string): Observable<T> {
+    return this.firestore.doc<T>(`/users/${userId}`).valueChanges();
+  }
+  getFriendData(userId: string) {
+    return this.getUserData<any>(userId).pipe(
+      map((user) => {
+        return {
+          uid: user.uid,
+          displayName: user.displayName,
+        };
+      })
+    );
   }
   async removeEvent(userId: string, eventId: string): Promise<void> {
     let userRef = this.firestore.doc(`/users/${userId}`);

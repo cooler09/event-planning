@@ -15,13 +15,15 @@ import DateHelper from "../shared/utils/date-helper";
   styleUrls: ["./home.component.scss"],
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  subscriptions: Subscription[] = [];
+  subscription: Subscription;
   formGroup: FormGroup;
   minutes: number[] = [];
   hours: number[] = [];
   userRef: any;
   eventRef: any = {};
   events: EventModel[] = [];
+  friendRef: any = {};
+  friends: any[] = [];
 
   objectValues = Object.values;
   formatDate = DateHelper.formatDate;
@@ -32,6 +34,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly eventService: EventService,
     private readonly userService: UserService
   ) {
+    this.subscription = new Subscription();
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
       location: new FormControl("", [Validators.required]),
@@ -52,17 +55,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn) {
-      this.subscriptions.push(
+      this.subscription.add(
         this.userService
-          .getUserData(this.authService.userData.uid)
+          .getUserData<any>(this.authService.userData.uid)
           .subscribe((userData) => {
-            if (userData && userData.events) {
-              if (userData.events.length > 0) {
-                let obs = userData.events.map((event) => {
+            if (userData) {
+              if (userData.events && userData.events.length > 0) {
+                let events = userData.events.map((event) => {
                   return this.eventService.getEvent(event);
                 });
-                this.subscriptions.push(
-                  merge<EventModel>(...obs).subscribe((event) => {
+                this.subscription.add(
+                  merge<EventModel>(...events).subscribe((event) => {
                     this.eventRef[event.id] = event;
                     this.events = Object.values(this.eventRef) as EventModel[];
                   })
@@ -71,15 +74,27 @@ export class HomeComponent implements OnInit, OnDestroy {
                 this.eventRef = {};
                 this.events = Object.values(this.eventRef) as EventModel[];
               }
+              if (userData.friends && userData.friends.length > 0) {
+                let friends = userData.friends.map((friend) => {
+                  return this.userService.getFriendData(friend);
+                });
+                this.subscription.add(
+                  merge<any>(...friends).subscribe((user) => {
+                    this.friendRef[user.uid] = user;
+                    this.friends = Object.values(this.friendRef) as any[];
+                  })
+                );
+              } else {
+                this.friendRef = {};
+                this.friends = Object.values(this.friendRef) as any[];
+              }
             }
           })
       );
     }
   }
   ngOnDestroy(): void {
-    this.subscriptions.forEach((_) => {
-      _.unsubscribe();
-    });
+    this.subscription.unsubscribe();
   }
   createEvent() {
     let name = this.formGroup.get("name").value;
