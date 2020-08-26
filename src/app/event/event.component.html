@@ -134,6 +134,16 @@
         <mat-card-content>
           <p>{{ comment.text }}</p>
           <p>{{ formatDate(comment.createdDate) }}</p>
+          <button
+            *ngIf="
+              authService.isLoggedIn &&
+              authService.userData.uid === comment.userId
+            "
+            mat-button
+            color="primary"
+          >
+            Delete
+          </button>
         </mat-card-content>
       </mat-card>
     </div>

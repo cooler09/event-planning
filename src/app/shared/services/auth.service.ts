@@ -167,6 +167,7 @@ export class AuthService {
       .then((result) => {
         if (migrateUser) {
           this.migrateUser(migrateUser, result.user.uid).then(() => {
+            this.clearUserData();
             this.ngZone.run(() => {
               let returnUrl =
                 this.route.snapshot.queryParams["returnUrl"] || "/";
@@ -199,55 +200,55 @@ export class AuthService {
 
         let promises = data.events.forEach((event) => {
           return new Promise(async () => {
-            console.log(event);
-            let attendeeRef = await this.afs
-              .doc(`/events/${event}/attendees/${refUserId}`)
+            let attendeesRef = await this.afs
+              .collection(`/events/${event}/attendees`, (ref) =>
+                ref.where("userId", "==", refUserId)
+              )
               .get()
               .toPromise();
-            console.log("attendee", attendeeRef);
-            let waitlistRef = await this.afs
-              .doc(`/events/${event}/waitlist/${refUserId}`)
-              .get()
-              .toPromise();
-            console.log("waitlist");
-            let commentRef = await this.afs
-              .doc(`/events/${event}/comments/${refUserId}`)
-              .get()
-              .toPromise();
-            console.log("comments");
-            if (attendeeRef.exists) {
-              console.log("attendeeRef");
-              await this.afs
-                .doc(`/events/${event}/attendees/${destUserId}`)
-                .set({
-                  ...attendeeRef,
+            let attendees = attendeesRef.docs.map((doc) => {
+              return new Promise(async () => {
+                await this.afs.doc(`/events/${event}/attendees/${doc.id}`).set({
+                  ...doc.data(),
                   userId: destUserId,
                 });
-              console.log("donealdsfjk");
-            }
-            if (waitlistRef.exists) {
-              console.log("waitlistRef");
-              await this.afs
-                .doc(`/events/${event}/waitlist/${destUserId}`)
-                .set({
-                  ...waitlistRef,
+              });
+            });
+            let waitlistRef = await this.afs
+              .collection(`/events/${event}/waitlist`, (ref) =>
+                ref.where("userId", "==", refUserId)
+              )
+              .get()
+              .toPromise();
+            let waitlistUsers = waitlistRef.docs.map((doc) => {
+              return new Promise(async () => {
+                await this.afs.doc(`/events/${event}/waitlist/${doc.id}`).set({
+                  ...doc.data(),
                   userId: destUserId,
-                })
-                .then();
-            }
-            if (commentRef.exists) {
-              await this.afs
-                .doc(`/events/${event}/comments/${destUserId}`)
-                .set({
-                  ...commentRef,
+                });
+              });
+            });
+            let commentsRef = await this.afs
+              .collection(`/events/${event}/comments`, (ref) =>
+                ref.where("userId", "==", refUserId)
+              )
+              .get()
+              .toPromise();
+            let comments = commentsRef.docs.map((doc) => {
+              return new Promise(async () => {
+                await this.afs.doc(`/events/${event}/comments/${doc.id}`).set({
+                  ...doc.data(),
                   userId: destUserId,
-                })
-                .then();
-            }
+                });
+              });
+            });
+
+            await Promise.all(attendees);
+            await Promise.all(waitlistUsers);
+            await Promise.all(comments);
           });
         });
         await Promise.all(promises);
-        console.log("done");
       }
     }
     return Promise.resolve();
@@ -260,12 +261,15 @@ export class AuthService {
   // Sign out
   SignOut() {
     return this.afAuth.signOut().then(() => {
-      this.userDataSubscriptions.forEach((_) => {
-        _.unsubscribe();
-      });
-      this._userData = null;
-      localStorage.removeItem("user");
+      this.clearUserData();
     });
+  }
+  private clearUserData() {
+    this.userDataSubscriptions.forEach((_) => {
+      _.unsubscribe();
+    });
+    this._userData = null;
+    localStorage.removeItem("user");
   }
   private parseUserData(user) {
     return {
