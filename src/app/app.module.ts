@@ -33,8 +33,9 @@ import { AngularFireMessagingModule } from "@angular/fire/messaging";
 import { AsyncPipe } from "@angular/common";
 import { MessagingService } from "./shared/messaging.service";
 import { EventService } from "./shared/services/event.service";
-import { GuestDialogComponent } from './shared/components/guest-dialog/guest-dialog.component';
-import { LoginComponent } from './shared/components/login/login.component';
+import { GuestDialogComponent } from "./shared/components/guest-dialog/guest-dialog.component";
+import { LoginComponent } from "./shared/components/login/login.component";
+import { FriendsComponent } from "./components/friends/friends.component";
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { LoginComponent } from './shared/components/login/login.component';
     SocialLoginComponent,
     GuestDialogComponent,
     LoginComponent,
+    FriendsComponent,
   ],
   imports: [
     BrowserModule,

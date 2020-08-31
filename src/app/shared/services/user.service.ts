@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Subscription, Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { User } from "../models/user";
 
 @Injectable({
   providedIn: "root",
@@ -29,8 +30,39 @@ export class UserService {
       })
     );
   }
+  async addFriend(friendId: string, userId: string) {
+    let userRef = await this.firestore.doc<User>(`/users/${userId}`);
+
+    let refFriends = (await userRef.get().toPromise()).get("friends");
+    let newFriendsList = [];
+    if (refFriends && refFriends.length > 0) {
+      refFriends.push(friendId);
+      newFriendsList = [...new Set(refFriends)];
+    } else {
+      newFriendsList.push(friendId);
+    }
+    return userRef.set(
+      {
+        friends: newFriendsList,
+      } as User,
+      { merge: true }
+    );
+  }
+  async getUsers(username: string) {
+    return (
+      await this.firestore.collection<User>("users").get().toPromise()
+    ).docs
+      .map((_) => _.data())
+      .filter((user) => {
+        let lowerUsername = username.toLocaleLowerCase();
+        return (
+          user.displayName?.toLowerCase().includes(lowerUsername) ||
+          user.email?.toLowerCase().includes(lowerUsername)
+        );
+      });
+  }
   async removeEvent(userId: string, eventId: string): Promise<void> {
-    let userRef = this.firestore.doc(`/users/${userId}`);
+    let userRef = this.firestore.doc<User>(`/users/${userId}`);
     let doc = await userRef.get().toPromise();
     let newEventList = [];
     if (!doc.exists) {
@@ -44,12 +76,12 @@ export class UserService {
     return await userRef.set(
       {
         events: newEventList,
-      },
+      } as User,
       { merge: true }
     );
   }
-  addEvent(userData: any, eventId: string) {
-    let userRef = this.firestore.doc(`/users/${userData.uid}`);
+  addEvent(userData: User, eventId: string) {
+    let userRef = this.firestore.doc<User>(`/users/${userData.uid}`);
 
     let newEventList = [];
     if (userData.events) {
@@ -61,7 +93,7 @@ export class UserService {
     return userRef.set(
       {
         events: newEventList,
-      },
+      } as User,
       { merge: true }
     );
   }
