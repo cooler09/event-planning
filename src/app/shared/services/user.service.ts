@@ -1,5 +1,8 @@
 import { Injectable } from "@angular/core";
-import { AngularFirestore } from "@angular/fire/firestore";
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+} from "@angular/fire/firestore";
 import { Subscription, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { User } from "../models/user";
@@ -17,18 +20,20 @@ export class UserService {
       _.unsubscribe();
     });
   }
-  getUserData<T>(userId: string): Observable<T> {
-    return this.firestore.doc<T>(`/users/${userId}`).valueChanges();
+  getUserData<T>(userId: string): AngularFirestoreDocument<T> {
+    return this.firestore.doc<T>(`/users/${userId}`);
   }
   getFriendData(userId: string) {
-    return this.getUserData<any>(userId).pipe(
-      map((user) => {
-        return {
-          uid: user.uid,
-          displayName: user.displayName,
-        };
-      })
-    );
+    return this.getUserData<any>(userId)
+      .valueChanges()
+      .pipe(
+        map((user) => {
+          return {
+            uid: user.uid,
+            displayName: user.displayName,
+          };
+        })
+      );
   }
   async addFriend(friendId: string, userId: string) {
     let userRef = await this.firestore.doc<User>(`/users/${userId}`);

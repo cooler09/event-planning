@@ -1,0 +1,37 @@
+<h3>Register</h3>
+
+<mat-form-field class="mx-3 w-100" appearance="fill">
+  <mat-label>Email</mat-label>
+  <input matInput type="email" #userName required />
+</mat-form-field>
+<mat-form-field class="mx-3 w-100" appearance="fill">
+  <mat-label>Display Name</mat-label>
+  <input matInput type="text" #displayName required />
+</mat-form-field>
+<mat-form-field class="mx-3 w-100" appearance="fill">
+  <mat-label>Password</mat-label>
+  <input matInput type="password" #userPassword required />
+</mat-form-field>
+
+<button
+  class="m-3"
+  (click)="
+    createClick.emit({
+      username: userName.value,
+      pass: userPassword.value,
+      displayName: displayName.value
+    })
+  "
+  mat-raised-button
+  color="primary"
+>
+  Create
+</button>
+
+<div class="formGroup">
+  <span class="or"><span class="orInner">Or</span></span>
+</div>
+<app-social-login
+  (facebookClick)="fbClick.emit()"
+  (googleClick)="googleClick.emit()"
+></app-social-login>

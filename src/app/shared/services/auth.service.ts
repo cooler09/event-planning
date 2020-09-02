@@ -3,55 +3,25 @@ import { auth } from "firebase/app";
 import { AngularFireAuth } from "@angular/fire/auth";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Router, ActivatedRoute } from "@angular/router";
-import { Subscription } from "rxjs";
+import { Subscription, of } from "rxjs";
+import { UserService } from "./user.service";
+import { User } from "../models/user";
+import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
-  _userData: any; // Save logged in user data
-  subscriptions: Subscription[] = [];
-  userDataSubscriptions: Subscription[] = [];
+  _userData: User; // Save logged in user data
+  subscriptions: Subscription;
+  userDataSubscription: Subscription;
 
-  constructor(
-    public afs: AngularFirestore, // Inject Firestore service
-    public afAuth: AngularFireAuth, // Inject Firebase auth service
-    public router: Router,
-    private readonly route: ActivatedRoute,
-    public ngZone: NgZone // NgZone service to remove outside scope warning
-  ) {
-    /* Saving user data in localstorage when 
-    logged in and setting up null when logged out */
-    this.subscriptions.push(
-      this.afAuth.authState.subscribe((user) => {
-        if (user) {
-          this.userDataSubscriptions.push(
-            this.getUserData(user.uid).subscribe((_) => {
-              if (_ && _["uid"]) {
-                this.setLocalStorage(_);
-              } else {
-                this.afs
-                  .doc(`/users/${user.uid}`)
-                  .set(this.parseUserData(user), { merge: true });
-              }
-            })
-          );
-        } else {
-          this.setLocalStorage(null);
-        }
-      })
-    );
+  // Returns true when user is logged in and email is verified
+  get isLoggedIn(): boolean {
+    let user = this.userData;
+    return user !== null ? true : false;
   }
-  ngOnDestroy() {
-    this.subscriptions.forEach((_) => {
-      _.unsubscribe();
-    });
-  }
-  setLocalStorage(user) {
-    this._userData = user;
-    localStorage.setItem("user", user ? JSON.stringify(user) : user);
-    JSON.parse(localStorage.getItem("user"));
-  }
+
   get userData(): any {
     if (this._userData) return this._userData;
 
@@ -63,19 +33,71 @@ export class AuthService {
 
     return null;
   }
-  UpgradeAccount(email: string, password: string) {
-    var credential = auth.EmailAuthProvider.credential(email, password);
-    var fbProvider = new auth.FacebookAuthProvider();
-    this.afAuth.signInWithPopup(fbProvider).then((data) => {});
 
-    // 2. Links the credential to the currently signed in user
-    // (the anonymous user).
+  constructor(
+    public readonly afs: AngularFirestore, // Inject Firestore service
+    public readonly afAuth: AngularFireAuth, // Inject Firebase auth service
+    public readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly userService: UserService,
+    public readonly ngZone: NgZone // NgZone service to remove outside scope warning
+  ) {
+    this.userDataSubscription = new Subscription();
+    this.subscriptions = new Subscription();
+    /* Saving user data in localstorage when 
+    logged in and setting up null when logged out */
+    this.subscriptions.add(
+      this.afAuth.authState.subscribe((user) => {
+        console.log("authState", user);
+        if (user) {
+          let userData = this.userService.getUserData(user.uid);
+          this.userDataSubscription.add(
+            userData.valueChanges().subscribe((_) => {
+              if (_ && _["uid"]) {
+                this.setLocalStorage(_);
+              } else {
+                this.afs
+                  .doc(`/users/${user.uid}`)
+                  .set(this.parseUserData(user), { merge: true });
+              }
+            })
+          );
+          this.userDataSubscription.add(
+            userData.get().subscribe((refData) => {
+              if (!refData.exists) {
+                this.afs
+                  .doc(`/users/${user.uid}`)
+                  .set(this.parseUserData(user), { merge: true });
+              }
+            })
+          );
+        } else {
+          this.clearUserData();
+        }
+      })
+    );
+  }
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+    this.userDataSubscription.unsubscribe();
+  }
+  UpgradeAccount(email: string, password: string, displayName: string = "") {
+    var credential = auth.EmailAuthProvider.credential(email, password);
     this.afAuth.currentUser.then((user) => {
       user.linkWithCredential(credential).then(
-        function (user) {
-          console.log("Anonymous account successfully upgraded", user);
+        (data) => {
+          console.log("Anonymous account successfully upgraded", data);
+          if (displayName) {
+            this.clearUserData();
+            data.user.updateProfile({
+              displayName: displayName,
+            });
+          }
+          /* Call the SendVerificaitonMail() function when new user sign 
+        up and returns promise */
+          this.SendVerificationMail(false);
         },
-        function (error) {
+        (error) => {
           console.log("Error upgrading anonymous account", error);
         }
       );
@@ -115,11 +137,13 @@ export class AuthService {
     return this.afAuth
       .createUserWithEmailAndPassword(email, password)
       .then((result) => {
-        result.user.updateProfile({
-          displayName: displayName,
-        });
+        if (displayName) {
+          result.user.updateProfile({
+            displayName: displayName,
+          });
+        }
         /* Call the SendVerificaitonMail() function when new user sign 
-        up and returns promise */
+    up and returns promise */
         this.SendVerificationMail();
       })
       .catch((error) => {
@@ -128,9 +152,9 @@ export class AuthService {
   }
 
   // Send email verfificaiton when new user sign up
-  async SendVerificationMail() {
+  async SendVerificationMail(routeAway: boolean = true) {
     return (await this.afAuth.currentUser).sendEmailVerification().then(() => {
-      this.router.navigate(["verify-email-address"]);
+      if (routeAway) this.router.navigate(["verify-email-address"]);
     });
   }
 
@@ -144,12 +168,6 @@ export class AuthService {
       .catch((error) => {
         window.alert(error);
       });
-  }
-
-  // Returns true when user is logged in and email is verified
-  get isLoggedIn(): boolean {
-    let user = this.userData;
-    return user !== null ? true : false;
   }
 
   // Sign in with Google
@@ -184,6 +202,13 @@ export class AuthService {
       .catch((error) => {
         window.alert(error);
       });
+  }
+
+  // Sign out
+  SignOut() {
+    return this.afAuth.signOut().then(() => {
+      this.clearUserData();
+    });
   }
   private async migrateUser(refUserId: string, destUserId): Promise<void> {
     let doc = await this.afs.doc(`/users/${refUserId}`).get().toPromise();
@@ -254,22 +279,15 @@ export class AuthService {
     return Promise.resolve();
   }
 
-  getUserData(id: string) {
-    return this.afs.doc(`/users/${id}`).valueChanges();
-  }
-
-  // Sign out
-  SignOut() {
-    return this.afAuth.signOut().then(() => {
-      this.clearUserData();
-    });
-  }
   private clearUserData() {
-    this.userDataSubscriptions.forEach((_) => {
-      _.unsubscribe();
-    });
+    this.userDataSubscription.unsubscribe();
     this._userData = null;
     localStorage.removeItem("user");
+  }
+  private setLocalStorage(user) {
+    this._userData = user;
+    localStorage.setItem("user", user ? JSON.stringify(user) : user);
+    JSON.parse(localStorage.getItem("user"));
   }
   private parseUserData(user) {
     return {

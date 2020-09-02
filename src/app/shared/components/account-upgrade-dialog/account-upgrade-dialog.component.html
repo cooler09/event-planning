@@ -1,0 +1,5 @@
+<app-login
+  (fbClick)="authService.FacebookAuth(authService.userData.uid)"
+  (googleClick)="authService.GoogleAuth(authService.userData.uid)"
+  (createClick)="createUser($event)"
+></app-login>

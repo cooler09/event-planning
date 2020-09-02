@@ -8,6 +8,8 @@ import { EventService } from "../shared/services/event.service";
 import { UserService } from "../shared/services/user.service";
 import { Subscription, merge } from "rxjs";
 import DateHelper from "../shared/utils/date-helper";
+import { MatDialog } from "@angular/material/dialog";
+import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
 
 @Component({
   selector: "app-home",
@@ -30,6 +32,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     public readonly authService: AuthService,
+    public readonly dialog: MatDialog,
     private readonly router: Router,
     private readonly eventService: EventService,
     private readonly userService: UserService
@@ -58,6 +61,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.subscription.add(
         this.userService
           .getUserData<any>(this.authService.userData.uid)
+          .valueChanges()
           .subscribe((userData) => {
             if (userData) {
               if (userData.events && userData.events.length > 0) {
@@ -95,6 +99,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+  upgradeAccount() {
+    this.dialog.open(AccountUpgradeDialogComponent, {
+      width: "500px",
+      data: { displayName: "" },
+    });
   }
   createEvent() {
     let name = this.formGroup.get("name").value;

@@ -36,6 +36,7 @@ import { EventService } from "./shared/services/event.service";
 import { GuestDialogComponent } from "./shared/components/guest-dialog/guest-dialog.component";
 import { LoginComponent } from "./shared/components/login/login.component";
 import { FriendsComponent } from "./components/friends/friends.component";
+import { AccountUpgradeDialogComponent } from './shared/components/account-upgrade-dialog/account-upgrade-dialog.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { FriendsComponent } from "./components/friends/friends.component";
     GuestDialogComponent,
     LoginComponent,
     FriendsComponent,
+    AccountUpgradeDialogComponent,
   ],
   imports: [
     BrowserModule,

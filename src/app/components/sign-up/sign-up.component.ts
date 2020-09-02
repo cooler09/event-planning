@@ -10,4 +10,7 @@ export class SignUpComponent implements OnInit {
   constructor(public authService: AuthService) {}
 
   ngOnInit(): void {}
+  createUser(data: any) {
+    this.authService.SignUp(data.username, data.pass, data.displayName);
+  }
 }
