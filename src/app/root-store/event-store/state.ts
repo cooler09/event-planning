@@ -1,7 +1,3 @@
-export interface State {
-  id: string;
-}
+export interface State {}
 
-export const initialState: State = {
-  id: "",
-};
+export const initialState: State = {};
