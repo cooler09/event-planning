@@ -10,6 +10,8 @@ import { Subscription, merge } from "rxjs";
 import DateHelper from "../shared/utils/date-helper";
 import { MatDialog } from "@angular/material/dialog";
 import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
+import { StoreService } from "../shared/services/store.service";
+import { selectEvents } from "../root-store/event-store/selectors";
 
 @Component({
   selector: "app-home",
@@ -32,6 +34,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     public readonly authService: AuthService,
+    private readonly storeService: StoreService,
     public readonly dialog: MatDialog,
     private readonly router: Router,
     private readonly eventService: EventService,
@@ -57,6 +60,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.storeService.select(selectEvents).subscribe((data) => {
+      console.log(data);
+    });
     if (this.authService.isLoggedIn) {
       this.subscription.add(
         this.userService

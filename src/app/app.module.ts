@@ -36,7 +36,9 @@ import { EventService } from "./shared/services/event.service";
 import { GuestDialogComponent } from "./shared/components/guest-dialog/guest-dialog.component";
 import { LoginComponent } from "./shared/components/login/login.component";
 import { FriendsComponent } from "./components/friends/friends.component";
-import { AccountUpgradeDialogComponent } from './shared/components/account-upgrade-dialog/account-upgrade-dialog.component';
+import { AccountUpgradeDialogComponent } from "./shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
+import { RootStoreModule } from "./root-store/root-store.module";
+import { StoreService } from "./shared/services/store.service";
 
 @NgModule({
   declarations: [
@@ -74,8 +76,15 @@ import { AccountUpgradeDialogComponent } from './shared/components/account-upgra
     AngularFirestoreModule,
     AngularFireAuthModule,
     AngularFireMessagingModule,
+    RootStoreModule,
   ],
-  providers: [AuthService, MessagingService, EventService, AsyncPipe],
+  providers: [
+    AuthService,
+    MessagingService,
+    EventService,
+    StoreService,
+    AsyncPipe,
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
