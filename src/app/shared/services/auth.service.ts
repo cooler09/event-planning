@@ -22,7 +22,7 @@ export class AuthService {
     return user !== null ? true : false;
   }
 
-  get userData(): any {
+  get userData(): User {
     if (this._userData) return this._userData;
 
     let userData = JSON.parse(localStorage.getItem("user"));

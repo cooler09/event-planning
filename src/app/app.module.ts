@@ -39,6 +39,7 @@ import { FriendsComponent } from "./components/friends/friends.component";
 import { AccountUpgradeDialogComponent } from "./shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
 import { RootStoreModule } from "./root-store/root-store.module";
 import { StoreService } from "./shared/services/store.service";
+import { GlobalObsService } from "./shared/services/global-obs.service";
 
 @NgModule({
   declarations: [
@@ -79,6 +80,7 @@ import { StoreService } from "./shared/services/store.service";
     RootStoreModule,
   ],
   providers: [
+    GlobalObsService,
     AuthService,
     MessagingService,
     EventService,

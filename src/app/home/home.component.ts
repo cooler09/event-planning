@@ -11,7 +11,7 @@ import DateHelper from "../shared/utils/date-helper";
 import { MatDialog } from "@angular/material/dialog";
 import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
 import { StoreService } from "../shared/services/store.service";
-import { selectEvents } from "../root-store/event-store/selectors";
+import { selectEvent, selectEvents } from "../root-store/event-store/selectors";
 
 @Component({
   selector: "app-home",
@@ -60,8 +60,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.storeService.select(selectEvents).subscribe((data) => {
-      console.log(data);
+    this.storeService.select(selectEvents).subscribe((events) => {
+      this.events = events;
     });
     if (this.authService.isLoggedIn) {
       this.subscription.add(
@@ -71,15 +71,15 @@ export class HomeComponent implements OnInit, OnDestroy {
           .subscribe((userData) => {
             if (userData) {
               if (userData.events && userData.events.length > 0) {
-                let events = userData.events.map((event) => {
-                  return this.eventService.getEvent(event);
-                });
-                this.subscription.add(
-                  merge<EventModel>(...events).subscribe((event) => {
-                    this.eventRef[event.id] = event;
-                    this.events = Object.values(this.eventRef) as EventModel[];
-                  })
-                );
+                // let events = userData.events.map((event) => {
+                //   return this.eventService.getEvent(event);
+                // });
+                // this.subscription.add(
+                //   merge<EventModel>(...events).subscribe((event) => {
+                //     this.eventRef[event.id] = event;
+                //     this.events = Object.values(this.eventRef) as EventModel[];
+                //   })
+                // );
               } else {
                 this.eventRef = {};
                 this.events = Object.values(this.eventRef) as EventModel[];

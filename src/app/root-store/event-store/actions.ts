@@ -1,12 +1,13 @@
 import { Action } from "@ngrx/store";
+import { EventModel } from "src/app/shared/models/event-model";
 
-export enum ActionTypes {
-  Empty = "[Changes] Empty Changes",
+export enum EventTypes {
+  Add = "[Event] Add Event",
 }
 
-export class EventInitAction implements Action {
-  public readonly type = "";
+export class AddEvent implements Action {
+  public readonly type = EventTypes.Add;
 
-  constructor(public payLoad: any) {}
+  constructor(public payload: EventModel) {}
 }
-export type Actions = EventInitAction;
+export type Actions = AddEvent;
