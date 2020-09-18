@@ -16,6 +16,9 @@ import { CommentModel } from "../shared/models/comment-model";
 import { UserService } from "../shared/services/user.service";
 import { MatDialog } from "@angular/material/dialog";
 import { GuestDialogComponent } from "../shared/components/guest-dialog/guest-dialog.component";
+import { StoreService } from "../shared/services/store.service";
+import { selectEvent } from "../root-store/event-store/selectors";
+import { GlobalObsService } from "../shared/services/global-obs.service";
 
 @Component({
   selector: "app-event",
@@ -39,6 +42,8 @@ export class EventComponent implements OnInit, OnDestroy {
     public readonly router: Router,
     private readonly eventService: EventService,
     private readonly userService: UserService,
+    private readonly storeService: StoreService,
+    private readonly globalObsService: GlobalObsService,
     public readonly dialog: MatDialog
   ) {
     this.formGroup = new FormGroup({
@@ -59,14 +64,16 @@ export class EventComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((_) => {
       _.unsubscribe();
     });
+    this.globalObsService.unregisterEvent(this.id);
   }
 
   ngOnInit(): void {
     this.subscriptions.push(
       this.route.params.subscribe((params) => {
         this.id = params["id"];
+        this.globalObsService.registerEvent(this.id);
         this.subscriptions.push(
-          this.eventService.getEvent(this.id).subscribe((event) => {
+          this.storeService.select(selectEvent(this.id)).subscribe((event) => {
             this.event = event;
           })
         );
@@ -113,7 +120,12 @@ export class EventComponent implements OnInit, OnDestroy {
   }
   removeAttendee(attendee: AttendeeModel) {
     this.eventService
-      .removeAttendee(this.event, attendee.id, this.waitlist)
+      .removeAttendee(
+        this.event.id,
+        this.event.waitListEnabled,
+        attendee.id,
+        this.waitlist
+      )
       .then((_) => {
         this.userService.removeEvent(attendee.userId, this.event.id).then();
       });

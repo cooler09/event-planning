@@ -12,6 +12,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
 import { StoreService } from "../shared/services/store.service";
 import { selectEvent, selectEvents } from "../root-store/event-store/selectors";
+import EventHelper from "../shared/utils/event-helper";
 
 @Component({
   selector: "app-home",
@@ -26,6 +27,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   userRef: any;
   eventRef: any = {};
   events: EventModel[] = [];
+  publicEvents: EventModel[] = [];
   friendRef: any = {};
   friends: any[] = [];
 
@@ -62,6 +64,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.storeService.select(selectEvents).subscribe((events) => {
       this.events = events;
+    });
+    this.eventService.getEvents().subscribe((events) => {
+      if (events) {
+        this.publicEvents = events.map((event) =>
+          EventHelper.convertToReduxEvent(event)
+        );
+      }
     });
     if (this.authService.isLoggedIn) {
       this.subscription.add(

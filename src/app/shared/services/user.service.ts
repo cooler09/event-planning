@@ -3,7 +3,7 @@ import {
   AngularFirestore,
   AngularFirestoreDocument,
 } from "@angular/fire/firestore";
-import { Subscription, Observable } from "rxjs";
+import { Subscription } from "rxjs";
 import { map } from "rxjs/operators";
 import { User } from "../models/user";
 
@@ -87,11 +87,11 @@ export class UserService {
   }
   addEvent(userData: User, eventId: string) {
     let userRef = this.firestore.doc<User>(`/users/${userData.uid}`);
-
     let newEventList = [];
     if (userData.events) {
-      userData.events.push(eventId);
-      newEventList = [...new Set(userData.events)];
+      let tempArray = [...userData.events];
+      tempArray.push(eventId);
+      newEventList = [...new Set(tempArray)];
     } else {
       newEventList.push(eventId);
     }
