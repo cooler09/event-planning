@@ -13,16 +13,8 @@ import { StoreService } from "./store.service";
 export class GlobalObsService implements OnInit {
   constructor(
     private readonly authService: AuthService,
-    private readonly firestore: AngularFirestore,
     private readonly storeService: StoreService,
     private readonly eventService: EventService
-  ) {
-    let obs = this.authService.userData.events.map((event) => {
-      return this.eventService.getEvent(event);
-    });
-    merge(...obs).subscribe((event) => {
-      this.storeService.dispatch(new AddEvent(event));
-    });
-  }
+  ) {}
   ngOnInit(): void {}
 }

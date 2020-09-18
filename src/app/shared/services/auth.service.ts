@@ -3,10 +3,15 @@ import { auth } from "firebase/app";
 import { AngularFireAuth } from "@angular/fire/auth";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Router, ActivatedRoute } from "@angular/router";
-import { Subscription, of } from "rxjs";
+import { Subscription, of, Observable, merge } from "rxjs";
 import { UserService } from "./user.service";
 import { User } from "../models/user";
 import { map } from "rxjs/operators";
+import { StoreService } from "./store.service";
+import { SetCurrentUser } from "src/app/root-store/user-store/actions";
+import { selectCurrentUser } from "src/app/root-store/user-store/selectors";
+import { EventService } from "./event.service";
+import { AddEvent } from "src/app/root-store/event-store/actions";
 
 @Injectable({
   providedIn: "root",
@@ -40,39 +45,57 @@ export class AuthService {
     public readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly userService: UserService,
+    private readonly storeService: StoreService,
+    private readonly eventService: EventService,
     public readonly ngZone: NgZone // NgZone service to remove outside scope warning
   ) {
     this.userDataSubscription = new Subscription();
     this.subscriptions = new Subscription();
+
+    this.subscriptions.add(
+      this.storeService.select(selectCurrentUser).subscribe((currentUser) => {
+        console.log("Redux currentUser: ", currentUser);
+        this.setLocalStorage(currentUser);
+        if (currentUser && currentUser.events) {
+          let obs = currentUser.events.map((event) => {
+            return this.eventService.getEvent(event);
+          });
+          merge(...obs).subscribe((event) => {
+            this.storeService.dispatch(new AddEvent(event));
+          });
+        }
+      })
+    );
     /* Saving user data in localstorage when 
     logged in and setting up null when logged out */
     this.subscriptions.add(
-      this.afAuth.authState.subscribe((user) => {
-        console.log("authState", user);
+      this.AuthState().subscribe((user) => {
+        console.log("Auth: ", user);
+        // if user is logged in
         if (user) {
-          let userData = this.userService.getUserData(user.uid);
-          this.userDataSubscription.add(
-            userData.valueChanges().subscribe((_) => {
+          // subscribe to any changes in firebase
+          this.userService
+            .getUserData(user.uid)
+            .valueChanges()
+            .subscribe((_) => {
+              console.log("User data", _);
+
+              // checks if we have valid information
               if (_ && _["uid"]) {
-                this.setLocalStorage(_);
+                // set the redux store
+                this.storeService.dispatch(
+                  new SetCurrentUser(new User().setData(_))
+                );
               } else {
+                // create user information
                 this.afs
                   .doc(`/users/${user.uid}`)
                   .set(this.parseUserData(user), { merge: true });
               }
-            })
-          );
-          this.userDataSubscription.add(
-            userData.get().subscribe((refData) => {
-              if (!refData.exists) {
-                this.afs
-                  .doc(`/users/${user.uid}`)
-                  .set(this.parseUserData(user), { merge: true });
-              }
-            })
-          );
+            });
         } else {
           this.clearUserData();
+          this.storeService.dispatch(new SetCurrentUser(null));
         }
       })
     );
@@ -80,6 +103,9 @@ export class AuthService {
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.userDataSubscription.unsubscribe();
+  }
+  AuthState(): Observable<firebase.User> {
+    return this.afAuth.authState;
   }
   UpgradeAccount(email: string, password: string, displayName: string = "") {
     var credential = auth.EmailAuthProvider.credential(email, password);
@@ -280,6 +306,7 @@ export class AuthService {
   }
 
   private clearUserData() {
+    console.log("clearing subs");
     this.userDataSubscription.unsubscribe();
     this._userData = null;
     localStorage.removeItem("user");
