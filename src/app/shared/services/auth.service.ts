@@ -6,12 +6,10 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { Subscription, of, Observable, merge } from "rxjs";
 import { UserService } from "./user.service";
 import { User } from "../models/user";
-import { map } from "rxjs/operators";
 import { StoreService } from "./store.service";
 import { SetCurrentUser } from "src/app/root-store/user-store/actions";
 import { selectCurrentUser } from "src/app/root-store/user-store/selectors";
-import { EventService } from "./event.service";
-import { AddEvent } from "src/app/root-store/event-store/actions";
+import { GlobalObsService } from "./global-obs.service";
 
 @Injectable({
   providedIn: "root",
@@ -46,7 +44,7 @@ export class AuthService {
     private readonly route: ActivatedRoute,
     private readonly userService: UserService,
     private readonly storeService: StoreService,
-    private readonly eventService: EventService,
+    private readonly globalService: GlobalObsService,
     public readonly ngZone: NgZone // NgZone service to remove outside scope warning
   ) {
     this.userDataSubscription = new Subscription();
@@ -54,14 +52,10 @@ export class AuthService {
 
     this.subscriptions.add(
       this.storeService.select(selectCurrentUser).subscribe((currentUser) => {
-        console.log("Redux currentUser: ", currentUser);
         this.setLocalStorage(currentUser);
         if (currentUser && currentUser.events) {
-          let obs = currentUser.events.map((event) => {
-            return this.eventService.getEvent(event);
-          });
-          merge(...obs).subscribe((event) => {
-            this.storeService.dispatch(new AddEvent(event));
+          currentUser.events.forEach((event) => {
+            this.globalService.registerEvent(event);
           });
         }
       })
@@ -70,7 +64,6 @@ export class AuthService {
     logged in and setting up null when logged out */
     this.subscriptions.add(
       this.AuthState().subscribe((user) => {
-        console.log("Auth: ", user);
         // if user is logged in
         if (user) {
           // subscribe to any changes in firebase
@@ -87,15 +80,12 @@ export class AuthService {
                   new SetCurrentUser(new User().setData(_))
                 );
               } else {
-                // create user information
-                this.afs
-                  .doc(`/users/${user.uid}`)
-                  .set(this.parseUserData(user), { merge: true });
+                let data = new User().setData(user);
+                this.userService.setUserData(data);
               }
             });
         } else {
           this.clearUserData();
-          this.storeService.dispatch(new SetCurrentUser(null));
         }
       })
     );
@@ -307,6 +297,7 @@ export class AuthService {
 
   private clearUserData() {
     console.log("clearing subs");
+    this.storeService.dispatch(new SetCurrentUser(null));
     this.userDataSubscription.unsubscribe();
     this._userData = null;
     localStorage.removeItem("user");
@@ -314,15 +305,5 @@ export class AuthService {
   private setLocalStorage(user) {
     this._userData = user;
     localStorage.setItem("user", user ? JSON.stringify(user) : user);
-    JSON.parse(localStorage.getItem("user"));
-  }
-  private parseUserData(user) {
-    return {
-      uid: user.uid,
-      email: user.email,
-      photoURL: user.photoURL,
-      emailVerified: user.emailVerified,
-      displayName: user.displayName,
-    };
   }
 }
