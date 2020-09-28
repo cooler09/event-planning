@@ -31,7 +31,7 @@ export class EventComponent implements OnInit, OnDestroy {
   event: EventModel;
   formGroup: FormGroup;
   positions: string[] = [];
-  commentText: string = "test";
+  commentText: string = "";
   formatDate = DateHelper.formatDate;
   constructor(
     public readonly authService: AuthService,
@@ -58,7 +58,6 @@ export class EventComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((_) => {
       _.unsubscribe();
     });
-    this.globalObsService.unregisterEvent(this.id);
   }
 
   ngOnInit(): void {
