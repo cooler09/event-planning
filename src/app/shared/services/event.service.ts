@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { EventModel } from "../models/event-model";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { AttendeeModel } from "../models/attendee-model";
 import { Observable } from "rxjs";

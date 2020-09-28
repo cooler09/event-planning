@@ -1,5 +1,10 @@
 import { Injectable, OnInit } from "@angular/core";
-import { AddEvent } from "src/app/root-store/event-store/actions";
+import {
+  AddAttendees,
+  AddComments,
+  AddEvent,
+  AddWaitlist,
+} from "src/app/root-store/event-store/actions";
 import EventHelper from "../utils/event-helper";
 import { EventService } from "./event.service";
 import { StoreService } from "./store.service";
@@ -17,27 +22,33 @@ export class GlobalObsService implements OnInit {
   ngOnInit(): void {}
   registerEvent(id: string) {
     if (this.eventSubscriptions[id]) return;
-    this.eventSubscriptions[id] = this.eventService
-      .getEvent(id)
-      .subscribe((event) => {
+    this.eventSubscriptions[id] = {
+      event: this.eventService.getEvent(id).subscribe((event) => {
         this.storeService.dispatch(
           new AddEvent(EventHelper.convertToReduxEvent(event))
         );
-      });
-  }
-  registerAttendees(eventId: string) {
-    if (this.attendeeSubscriptions[eventId]) return;
-    this.attendeeSubscriptions[eventId] = this.eventService
-      .getEventAttendees(eventId)
-      .subscribe((event) => {
-        //redux add
-      });
+      }),
+      attendees: this.eventService
+        .getEventAttendees(id)
+        .subscribe((attendees) => {
+          this.storeService.dispatch(
+            new AddAttendees({ eventId: id, attendees })
+          );
+        }),
+      waitlist: this.eventService.getEventWaitlist(id).subscribe((waitlist) => {
+        this.storeService.dispatch(new AddWaitlist({ eventId: id, waitlist }));
+      }),
+      comments: this.eventService.getComments(id).subscribe((comments) => {
+        this.storeService.dispatch(new AddComments({ eventId: id, comments }));
+      }),
+    };
   }
   unregisterEvent(id: string) {
-    if (this.eventSubscriptions[id]) this.eventSubscriptions[id].unsubscribe();
-  }
-  unregisterAttendee(eventId: string) {
-    if (this.attendeeSubscriptions[eventId])
-      this.attendeeSubscriptions[eventId].unsubscribe();
+    if (this.eventSubscriptions[id]) {
+      this.eventSubscriptions[id].event.unsubscribe();
+      this.eventSubscriptions[id].attendees.unsubscribe();
+      this.eventSubscriptions[id].waitlist.unsubscribe();
+      this.eventSubscriptions[id].comments.unsubscribe();
+    }
   }
 }

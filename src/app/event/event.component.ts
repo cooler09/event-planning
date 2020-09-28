@@ -29,9 +29,6 @@ export class EventComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   id: string;
   event: EventModel;
-  attendees: AttendeeModel[];
-  waitlist: AttendeeModel[];
-  comments: CommentModel[];
   formGroup: FormGroup;
   positions: string[] = [];
   commentText: string = "test";
@@ -49,9 +46,6 @@ export class EventComponent implements OnInit, OnDestroy {
     this.formGroup = new FormGroup({
       positions: new FormControl("", [Validators.required]),
     });
-    this.attendees = [];
-    this.waitlist = [];
-    this.comments = [];
     this.positions = [
       "Setter",
       "Libero",
@@ -77,25 +71,6 @@ export class EventComponent implements OnInit, OnDestroy {
             this.event = event;
           })
         );
-
-        this.subscriptions.push(
-          this.eventService
-            .getEventAttendees(this.id)
-            .subscribe((attendees) => {
-              this.attendees = attendees;
-            })
-        );
-
-        this.subscriptions.push(
-          this.eventService.getEventWaitlist(this.id).subscribe((waitlist) => {
-            this.waitlist = waitlist;
-          })
-        );
-        this.subscriptions.push(
-          this.eventService.getComments(this.id).subscribe((comments) => {
-            this.comments = comments;
-          })
-        );
       })
     );
   }
@@ -112,8 +87,8 @@ export class EventComponent implements OnInit, OnDestroy {
     return (
       this.authService.isLoggedIn &&
       this.eventService.isSignedUp(
-        this.attendees,
-        this.waitlist,
+        this.event.attendees,
+        this.event.waitlist,
         this.authService.userData.uid
       )
     );
@@ -124,7 +99,7 @@ export class EventComponent implements OnInit, OnDestroy {
         this.event.id,
         this.event.waitListEnabled,
         attendee.id,
-        this.waitlist
+        this.event.waitlist
       )
       .then((_) => {
         this.userService.removeEvent(attendee.userId, this.event.id).then();
@@ -167,7 +142,7 @@ export class EventComponent implements OnInit, OnDestroy {
     attendee: AttendeeModel
   ) {
     this.userService.addEvent(userData, eventId);
-    if (this.attendees.length < this.event.maxAttendees) {
+    if (this.event.attendees.length < this.event.maxAttendees) {
       this.eventService.addAttendeeFirebase(eventId, attendee).then();
     } else {
       this.eventService.addWaitlistFirebase(eventId, attendee).then();

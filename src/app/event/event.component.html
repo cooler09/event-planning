@@ -14,10 +14,10 @@
   <div class="row">
     <div class="col-6">
       <h3>Attendees</h3>
-      <div *ngIf="attendees">
+      <div *ngIf="event.attendees">
         <div
           class="d-flex justify-content-between"
-          *ngFor="let attendee of attendees"
+          *ngFor="let attendee of event.attendees"
         >
           <p>Name: {{ attendee.name }}</p>
           <div *ngIf="attendee.positions && attendee.positions.length > 0">
@@ -44,10 +44,10 @@
 
       <hr />
       <h3>Wait List</h3>
-      <div *ngIf="waitlist">
+      <div *ngIf="event.waitlist">
         <div
           class="d-flex justify-content-between"
-          *ngFor="let attendee of waitlist; let i = index"
+          *ngFor="let attendee of event.waitlist; let i = index"
         >
           <p>{{ i + 1 }}. {{ attendee.name }}</p>
           <div *ngIf="attendee.positions && attendee.positions.length > 0">
@@ -124,7 +124,7 @@
           Add
         </button>
       </div>
-      <mat-card class="shadow m-3" *ngFor="let comment of comments">
+      <mat-card class="shadow m-3" *ngFor="let comment of event.comments">
         <mat-card-header>
           <mat-card-title>{{
             comment.userName ? comment.userName : "Anonymous"

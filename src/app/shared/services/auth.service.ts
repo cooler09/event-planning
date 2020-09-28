@@ -71,8 +71,6 @@ export class AuthService {
             .getUserData(user.uid)
             .valueChanges()
             .subscribe((_) => {
-              console.log("User data", _);
-
               // checks if we have valid information
               if (_ && _["uid"]) {
                 // set the redux store
