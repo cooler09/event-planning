@@ -103,7 +103,9 @@ export class EventService {
       );
   }
   addEvent(event: FSEventModel) {
-    return this.firestore.doc<FSEventModel>(`/events/${event.id}`).set(event);
+    return this.firestore
+      .doc<FSEventModel>(`/events/${event.id}`)
+      .set({ ...event });
   }
   addComment(eventId: string, comment: CommentModel) {
     return this.firestore

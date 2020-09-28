@@ -13,6 +13,7 @@ import { StoreService } from "../shared/services/store.service";
 import { selectEvent } from "../root-store/event-store/selectors";
 import EventHelper from "../shared/utils/event-helper";
 import { selectCurrentUser } from "../root-store/user-store/selectors";
+import { FSEventModel } from "../shared/models/fs-event-model";
 
 @Component({
   selector: "app-home",
@@ -110,7 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     endDate.setHours(this.formGroup.get("endHour").value);
     endDate.setMinutes(this.formGroup.get("endMinute").value);
     let id = uuid();
-    let eventModel = new EventModel();
+    let eventModel = new FSEventModel();
     eventModel.id = id;
     eventModel.name = name;
     eventModel.location = location;
@@ -119,9 +120,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     eventModel.waitListEnabled = this.formGroup.get("waitListEnabled").value;
     eventModel.userId = this.authService.userData.uid;
-    let parsedEvent = Object.assign({}, eventModel);
     Promise.all([
-      this.eventService.addEvent(parsedEvent),
+      this.eventService.addEvent(eventModel),
       ...[].map((attendee) =>
         this.eventService.addAttendeeFirebase(id, attendee)
       ),
