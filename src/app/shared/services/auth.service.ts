@@ -95,21 +95,49 @@ export class AuthService {
   AuthState(): Observable<firebase.User> {
     return this.afAuth.authState;
   }
-  UpgradeAccount(email: string, password: string, displayName: string = "") {
+  UpgradeAccount(
+    email: string,
+    password: string,
+    displayName: string = "Player 1"
+  ) {
     var credential = auth.EmailAuthProvider.credential(email, password);
     this.afAuth.currentUser.then((user) => {
       user.linkWithCredential(credential).then(
         (data) => {
           console.log("Anonymous account successfully upgraded", data);
-          if (displayName) {
-            this.clearUserData();
-            data.user.updateProfile({
-              displayName: displayName,
-            });
-          }
+          let userData = new User().safeParse({
+            ...data.user,
+            ...data.additionalUserInfo?.profile,
+            displayName: displayName,
+          });
+          this.userService.setUserData(userData);
+          data.user.updateProfile(userData);
+
           /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
           this.SendVerificationMail(false);
+        },
+        (error) => {
+          console.log("Error upgrading anonymous account", error);
+        }
+      );
+    });
+  }
+
+  UpgradeAccountSM(type: "facebook" | "google") {
+    var credential =
+      type === "facebook"
+        ? new auth.FacebookAuthProvider()
+        : new auth.GoogleAuthProvider();
+    this.afAuth.currentUser.then((user) => {
+      user.linkWithPopup(credential).then(
+        (data) => {
+          console.log("Anonymous account successfully upgraded", data);
+          let userData = new User().safeParse({
+            ...data.user,
+            ...data.additionalUserInfo?.profile,
+          });
+          this.userService.setUserData(userData);
         },
         (error) => {
           console.log("Error upgrading anonymous account", error);
@@ -121,11 +149,9 @@ export class AuthService {
     return this.afAuth
       .signInAnonymously()
       .then((result) => {
-        result.user
-          .updateProfile({
-            displayName: displayName ? displayName : "Anonymous",
-          })
-          .then();
+        result.user.updateProfile({
+          displayName: displayName ? displayName : "Anonymous",
+        });
       })
       .catch((error) => {
         window.alert(error.message);
@@ -185,33 +211,22 @@ export class AuthService {
   }
 
   // Sign in with Google
-  GoogleAuth(migrateUser: string = null) {
-    return this.AuthLogin(new auth.GoogleAuthProvider(), migrateUser);
+  GoogleAuth() {
+    return this.AuthLogin(new auth.GoogleAuthProvider());
   }
-  FacebookAuth(migrateUser: string = null) {
-    return this.AuthLogin(new auth.FacebookAuthProvider(), migrateUser);
+  FacebookAuth() {
+    return this.AuthLogin(new auth.FacebookAuthProvider());
   }
 
   // Auth logic to run auth providers
-  AuthLogin(provider, migrateUser: string = null) {
+  AuthLogin(provider) {
     return this.afAuth
       .signInWithPopup(provider)
       .then((result) => {
-        if (migrateUser) {
-          this.migrateUser(migrateUser, result.user.uid).then(() => {
-            this.clearUserData();
-            this.ngZone.run(() => {
-              let returnUrl =
-                this.route.snapshot.queryParams["returnUrl"] || "/";
-              this.router.navigate([returnUrl]);
-            });
-          });
-        } else {
-          this.ngZone.run(() => {
-            let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
-            this.router.navigate([returnUrl]);
-          });
-        }
+        this.ngZone.run(() => {
+          let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+          this.router.navigate([returnUrl]);
+        });
       })
       .catch((error) => {
         window.alert(error);
@@ -224,75 +239,6 @@ export class AuthService {
       this.clearUserData();
     });
   }
-  private async migrateUser(refUserId: string, destUserId): Promise<void> {
-    let doc = await this.afs.doc(`/users/${refUserId}`).get().toPromise();
-    if (doc.exists) {
-      let data = doc.data();
-      if (data && data.events) {
-        await this.afs.doc(`/users/${destUserId}`).set(
-          {
-            events: data.events,
-          },
-          { merge: true }
-        );
-        await this.afs.doc(`/users/${refUserId}`).delete();
-
-        let promises = data.events.forEach((event) => {
-          return new Promise(async () => {
-            let attendeesRef = await this.afs
-              .collection(`/events/${event}/attendees`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let attendees = attendeesRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/attendees/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-            let waitlistRef = await this.afs
-              .collection(`/events/${event}/waitlist`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let waitlistUsers = waitlistRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/waitlist/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-            let commentsRef = await this.afs
-              .collection(`/events/${event}/comments`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let comments = commentsRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/comments/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-
-            await Promise.all(attendees);
-            await Promise.all(waitlistUsers);
-            await Promise.all(comments);
-          });
-        });
-        await Promise.all(promises);
-      }
-    }
-    return Promise.resolve();
-  }
-
   private clearUserData() {
     console.log("clearing subs");
     this.storeService.dispatch(new SetCurrentUser(null));

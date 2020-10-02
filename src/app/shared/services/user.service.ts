@@ -102,7 +102,7 @@ export class UserService {
       { merge: true }
     );
   }
-  setUserData(user: User) {
+  setUserData(user: any) {
     // create user information
     this.firestore.doc(`/users/${user.uid}`).set({ ...user }, { merge: true });
   }

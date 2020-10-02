@@ -20,4 +20,18 @@ export class User {
     if (user["friends"]) this.friends = user["friends"];
     return this;
   }
+  safeParse(data: any) {
+    let parsedData = {};
+    if (data["uid"]) parsedData["uid"] = data["uid"];
+    if (data["email"]) parsedData["email"] = data["email"];
+    if (data["name"]) parsedData["displayName"] = data["name"];
+    if (data["displayName"]) parsedData["displayName"] = data["displayName"];
+    if (data["photoURL"]) parsedData["photoURL"] = data["photoURL"];
+    if (data["picture"]) parsedData["photoURL"] = data["picture"];
+    if (data["emailVerified"])
+      parsedData["emailVerified"] = data["emailVerified"];
+    if (data["verified_email"])
+      parsedData["emailVerified"] = data["verified_email"];
+    return parsedData;
+  }
 }
