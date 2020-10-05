@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { AuthService } from "./shared/services/auth.service";
 import { MessagingService } from "./shared/messaging.service";
 import { AngularFirestore } from "@angular/fire/firestore";
+import { GlobalObsService } from "./shared/services/global-obs.service";
 
 @Component({
   selector: "app-root",
@@ -14,6 +15,7 @@ export class AppComponent implements OnInit {
   notifications: any[];
   constructor(
     public readonly authService: AuthService,
+    private readonly globalObs: GlobalObsService,
     private readonly messagingService: MessagingService,
     private readonly angularFireDB: AngularFirestore
   ) {
@@ -25,7 +27,7 @@ export class AppComponent implements OnInit {
       this.messagingService.receiveMessage(this.authService.userData.uid);
       this.message = this.messagingService.currentMessage;
       this.angularFireDB
-        .collection(`messages/${this.authService.userData.uid}/messages`)
+        .collection(`users/${this.authService.userData.uid}/messages`)
         .valueChanges()
         .subscribe((_) => {
           this.notifications = _;

@@ -1,30 +1,48 @@
-import { Component, OnInit } from "@angular/core";
-import {
-  AngularFirestore,
-  AngularFirestoreDocument,
-} from "@angular/fire/firestore";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { v4 as uuid } from "uuid";
 import { FormGroup, FormControl, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
+import { EventService } from "../shared/services/event.service";
+import { Subscription, merge } from "rxjs";
+import DateHelper from "../shared/utils/date-helper";
+import { MatDialog } from "@angular/material/dialog";
+import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
+import { StoreService } from "../shared/services/store.service";
+import { selectEvent } from "../root-store/event-store/selectors";
+import EventHelper from "../shared/utils/event-helper";
+import { selectCurrentUser } from "../root-store/user-store/selectors";
+import { FSEventModel } from "../shared/models/fs-event-model";
 
 @Component({
   selector: "app-home",
   templateUrl: "./home.component.html",
   styleUrls: ["./home.component.scss"],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  subscription: Subscription;
   formGroup: FormGroup;
   minutes: number[] = [];
   hours: number[] = [];
-  userRef: AngularFirestoreDocument<any>;
+  userRef: any;
+  eventRef: any = {};
+  events: EventModel[] = [];
+  publicEvents: EventModel[] = [];
+  friendRef: any = {};
+  friends: any[] = [];
+
+  objectValues = Object.values;
+  formatDate = DateHelper.formatDate;
 
   constructor(
     public readonly authService: AuthService,
-    private readonly firestore: AngularFirestore,
-    private readonly router: Router
+    private readonly storeService: StoreService,
+    public readonly dialog: MatDialog,
+    private readonly router: Router,
+    private readonly eventService: EventService
   ) {
+    this.subscription = new Subscription();
     this.formGroup = new FormGroup({
       name: new FormControl("", [Validators.required]),
       location: new FormControl("", [Validators.required]),
@@ -44,7 +62,43 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userRef = this.firestore.doc(`users/${this.authService.userData.uid}`);
+    this.subscription.add(
+      this.storeService.select(selectCurrentUser).subscribe((currentUser) => {
+        console.log(currentUser);
+        if (currentUser && currentUser.events) {
+          let obs = currentUser.events.map((eventId) => {
+            return this.storeService.select(selectEvent(eventId));
+          });
+          this.subscription.add(
+            merge(...obs).subscribe((event) => {
+              if (event) {
+                console.log(event);
+                this.eventRef[event.id] = event;
+                this.events = Object.values(this.eventRef) as EventModel[];
+              }
+            })
+          );
+        }
+      })
+    );
+    this.subscription.add(
+      this.eventService.getEvents().subscribe((events) => {
+        if (events) {
+          this.publicEvents = events.map((event) =>
+            EventHelper.convertToReduxEvent(event)
+          );
+        }
+      })
+    );
+  }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+  upgradeAccount() {
+    this.dialog.open(AccountUpgradeDialogComponent, {
+      width: "800px",
+      data: { displayName: "" },
+    });
   }
   createEvent() {
     let name = this.formGroup.get("name").value;
@@ -57,7 +111,7 @@ export class HomeComponent implements OnInit {
     endDate.setHours(this.formGroup.get("endHour").value);
     endDate.setMinutes(this.formGroup.get("endMinute").value);
     let id = uuid();
-    let eventModel = new EventModel();
+    let eventModel = new FSEventModel();
     eventModel.id = id;
     eventModel.name = name;
     eventModel.location = location;
@@ -66,11 +120,16 @@ export class HomeComponent implements OnInit {
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     eventModel.waitListEnabled = this.formGroup.get("waitListEnabled").value;
     eventModel.userId = this.authService.userData.uid;
-    this.firestore
-      .doc<EventModel>(`/events/${id}`)
-      .set({ ...eventModel })
-      .then(() => {
-        this.router.navigate(["event", id]);
-      });
+    Promise.all([
+      this.eventService.addEvent(eventModel),
+      ...[].map((attendee) =>
+        this.eventService.addAttendeeFirebase(id, attendee)
+      ),
+      ...[].map((attendee) =>
+        this.eventService.addWaitlistFirebase(id, attendee)
+      ),
+    ]).then(() => {
+      this.router.navigate(["event", id]);
+    });
   }
 }

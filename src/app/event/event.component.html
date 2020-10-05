@@ -5,7 +5,8 @@
         <h1>{{ event.name }}</h1>
         <div>{{ event.location }}</div>
         <div>
-          {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
+          {{ formatDate(event.startDate) }} -
+          {{ formatDate(event.endDate) }}
         </div>
       </div>
     </div>
@@ -32,7 +33,7 @@
               (authService.userData.uid === event.userId ||
                 authService.userData.uid === attendee.userId)
             "
-            (click)="removeAttendee(attendee.id)"
+            (click)="removeAttendee(attendee)"
             mat-button
             color="primary"
           >
@@ -40,11 +41,13 @@
           </button>
         </div>
       </div>
+
+      <hr />
       <h3>Wait List</h3>
-      <div *ngIf="event.waitList">
+      <div *ngIf="event.waitlist">
         <div
           class="d-flex justify-content-between"
-          *ngFor="let attendee of event.waitList; let i = index"
+          *ngFor="let attendee of event.waitlist; let i = index"
         >
           <p>{{ i + 1 }}. {{ attendee.name }}</p>
           <div *ngIf="attendee.positions && attendee.positions.length > 0">
@@ -56,44 +59,93 @@
         </div>
       </div>
     </div>
-    <div class="col-6">
-      <div [formGroup]="formGroup">
+    <div *ngIf="!isSignedUp()" class="col-6">
+      <div *ngIf="authService.isLoggedIn; else signIn">
+        <div *ngIf="!isSignedUp()" [formGroup]="formGroup">
+          <mat-form-field appearance="fill">
+            <mat-label>Position</mat-label>
+            <mat-select formControlName="positions" multiple>
+              <mat-option *ngFor="let pos of positions" [value]="pos">{{
+                pos
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-raised-button
+            class="m-3"
+            (click)="signUp()"
+            color="primary"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+      <ng-template #signIn>
+        <p>Login in order to sign up for the event.</p>
+        <div class="d-flex justify-content-center align-items-center">
+          <button
+            mat-raised-button
+            class="m-3"
+            (click)="signUpAsGuest()"
+            color="primary"
+          >
+            Sign Up As Guest
+          </button>
+          <div class="formGroup">
+            <span class="or"><span class="orInner">Or</span></span>
+          </div>
+          <button
+            mat-raised-button
+            class="m-3"
+            [routerLink]="['/login']"
+            [queryParams]="{ returnUrl: router.url }"
+            color="primary"
+          >
+            Login
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col-12">
+      <div *ngIf="authService.isLoggedIn">
         <mat-form-field appearance="fill">
-          <mat-label>Name</mat-label>
-          <input matInput type="text" formControlName="name" />
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Position</mat-label>
-          <mat-select formControlName="positions" multiple>
-            <mat-option *ngFor="let pos of positions" [value]="pos">{{
-              pos
-            }}</mat-option>
-          </mat-select>
+          <mat-label>What's happening?</mat-label>
+          <textarea matInput type="text" [(ngModel)]="commentText"></textarea>
         </mat-form-field>
         <button
           mat-raised-button
           class="m-3"
-          (click)="addAttendee()"
+          (click)="comment()"
           color="primary"
         >
-          Sign Up
+          Add
         </button>
-        <div *ngIf="!isSignedUp()">
-          <div class="formGroup">
-            <span class="or"><span class="orInner">Or</span></span>
-          </div>
-          <div>
-            <button
-              mat-raised-button
-              class="m-3"
-              (click)="signUp()"
-              color="primary"
-            >
-              Sign Up With Account
-            </button>
-          </div>
-        </div>
       </div>
+      <mat-card class="shadow m-3" *ngFor="let comment of event.comments">
+        <mat-card-header>
+          <mat-card-title>{{
+            comment.userName ? comment.userName : "Anonymous"
+          }}</mat-card-title>
+          <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ comment.text }}</p>
+          <p>{{ formatDate(comment.createdDate) }}</p>
+          <button
+            *ngIf="
+              authService.isLoggedIn &&
+              authService.userData.uid === comment.userId
+            "
+            mat-button
+            color="primary"
+          >
+            Delete
+          </button>
+        </mat-card-content>
+      </mat-card>
     </div>
   </div>
 </div>

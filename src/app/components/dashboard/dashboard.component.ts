@@ -2,7 +2,6 @@ import { Component, OnInit } from "@angular/core";
 import { AuthService } from "src/app/shared/services/auth.service";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Subscription } from "rxjs";
-import { User } from "src/app/shared/services/user";
 
 @Component({
   selector: "app-dashboard",

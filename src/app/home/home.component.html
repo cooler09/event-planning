@@ -1,4 +1,18 @@
 <div class="row" *ngIf="authService.isLoggedIn; else userLoggedIn">
+  <div class="col-12" *ngIf="!authService.userData.email">
+    <p>
+      Warning: You're using a guest account. If you'd like to Upgrade please
+
+      <button
+        class="m-3"
+        (click)="upgradeAccount()"
+        mat-raised-button
+        color="primary"
+      >
+        Click here
+      </button>
+    </p>
+  </div>
   <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
     <div>
       <mat-form-field class="m-2" appearance="fill">
@@ -11,7 +25,7 @@
       </mat-form-field>
     </div>
     <div>
-      <mat-form-field class="m-2" style="width: 200px;" appearance="fill">
+      <mat-form-field class="m-2" style="width: 200px" appearance="fill">
         <mat-label>Date</mat-label>
         <input matInput [matDatepicker]="picker1" formControlName="date" />
         <mat-datepicker-toggle
@@ -20,7 +34,7 @@
         ></mat-datepicker-toggle>
         <mat-datepicker #picker1></mat-datepicker>
       </mat-form-field>
-      <mat-form-field class="m-2" style="width: 100px;" appearance="fill">
+      <mat-form-field class="m-2" style="width: 100px" appearance="fill">
         <mat-label>Start Hr</mat-label>
         <mat-select formControlName="startHour">
           <mat-option *ngFor="let hour of hours" [value]="hour">
@@ -28,7 +42,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="m-2" style="width: 100px;" appearance="fill">
+      <mat-form-field class="m-2" style="width: 100px" appearance="fill">
         <mat-label>Start Min</mat-label>
         <mat-select formControlName="startMinute">
           <mat-option *ngFor="let minute of minutes" [value]="minute">
@@ -36,7 +50,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="m-2" style="width: 100px;" appearance="fill">
+      <mat-form-field class="m-2" style="width: 100px" appearance="fill">
         <mat-label>End Hr</mat-label>
         <mat-select formControlName="endHour">
           <mat-option *ngFor="let hour of hours" [value]="hour">
@@ -44,7 +58,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="m-2" style="width: 100px;" appearance="fill">
+      <mat-form-field class="m-2" style="width: 100px" appearance="fill">
         <mat-label>End Min</mat-label>
         <mat-select formControlName="endMinute">
           <mat-option *ngFor="let minute of minutes" [value]="minute">
@@ -71,7 +85,7 @@
       <mat-form-field
         class="m-2"
         *ngIf="formGroup.get('hasMaxAttendees').value"
-        style="width: 100px;"
+        style="width: 100px"
         appearance="fill"
       >
         <mat-label>Max Attendees</mat-label>
@@ -93,3 +107,57 @@
 <ng-template #userLoggedIn
   ><div>Please log in to create an event.</div></ng-template
 >
+<div *ngIf="friends.length > 0" class="row p-5">
+  <div class="col-12 text-center">
+    <h2>Friends</h2>
+    <div class="d-flex justify-content-around flex-wrap">
+      <div *ngFor="let friend of friends">
+        <p>{{ friend.displayName }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="events" class="row p-5">
+  <div class="col-12 text-center">
+    <h2>My Events</h2>
+    <div class="d-flex justify-content-around flex-wrap">
+      <mat-card class="shadow" *ngFor="let event of events">
+        <mat-card-header>
+          <mat-card-title>{{ event.name }}</mat-card-title>
+          <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div>
+            {{ formatDate(event.startDate) }} -
+            {{ formatDate(event.endDate) }}
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button [routerLink]="['/event/', event.id]">View</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>
+<div *ngIf="publicEvents" class="row p-5">
+  <div class="col-12 text-center">
+    <h2>Public Events</h2>
+    <div class="d-flex justify-content-around flex-wrap">
+      <mat-card class="shadow" *ngFor="let event of publicEvents">
+        <mat-card-header>
+          <mat-card-title>{{ event.name }}</mat-card-title>
+          <mat-card-subtitle>{{ event.location }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div>
+            {{ formatDate(event.startDate) }} -
+            {{ formatDate(event.endDate) }}
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button [routerLink]="['/event/', event.id]">View</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

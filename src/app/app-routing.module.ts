@@ -8,13 +8,17 @@ import { ForgotPasswordComponent } from "./components/forgot-password/forgot-pas
 import { VerifyEmailComponent } from "./components/verify-email/verify-email.component";
 import { AuthGuard } from "./shared/guard/auth.guard";
 import { SignUpComponent } from "./components/sign-up/sign-up.component";
+import { FriendsComponent } from "./components/friends/friends.component";
 
 const routes: Routes = [
   {
     path: "",
     component: HomeComponent,
   },
-
+  {
+    path: "friends",
+    component: FriendsComponent,
+  },
   {
     path: "event/:id",
     component: EventComponent,

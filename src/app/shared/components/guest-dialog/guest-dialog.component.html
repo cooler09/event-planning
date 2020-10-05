@@ -1,0 +1,18 @@
+<div [formGroup]="formGroup">
+  <mat-form-field class="m-2" appearance="fill">
+    <mat-label>Display Name</mat-label>
+    <input matInput type="text" formControlName="displayName" />
+  </mat-form-field>
+  <button
+    mat-raised-button
+    class="m-3"
+    [disabled]="!formGroup.valid"
+    (click)="signUp()"
+    color="primary"
+  >
+    Sign Up
+  </button>
+  <button mat-raised-button class="m-3" (click)="dialogRef.close()">
+    Close
+  </button>
+</div>

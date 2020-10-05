@@ -19,6 +19,8 @@ import { MatNativeDateModule } from "@angular/material/core";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSelectModule } from "@angular/material/select";
+import { MatCardModule } from "@angular/material/card";
+import { MatDialogModule } from "@angular/material/dialog";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { DashboardComponent } from "./components/dashboard/dashboard.component";
 import { SignInComponent } from "./components/sign-in/sign-in.component";
@@ -30,6 +32,14 @@ import { SocialLoginComponent } from "./shared/components/social-login/social-lo
 import { AngularFireMessagingModule } from "@angular/fire/messaging";
 import { AsyncPipe } from "@angular/common";
 import { MessagingService } from "./shared/messaging.service";
+import { EventService } from "./shared/services/event.service";
+import { GuestDialogComponent } from "./shared/components/guest-dialog/guest-dialog.component";
+import { LoginComponent } from "./shared/components/login/login.component";
+import { FriendsComponent } from "./components/friends/friends.component";
+import { AccountUpgradeDialogComponent } from "./shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
+import { RootStoreModule } from "./root-store/root-store.module";
+import { StoreService } from "./shared/services/store.service";
+import { GlobalObsService } from "./shared/services/global-obs.service";
 
 @NgModule({
   declarations: [
@@ -42,6 +52,10 @@ import { MessagingService } from "./shared/messaging.service";
     ForgotPasswordComponent,
     VerifyEmailComponent,
     SocialLoginComponent,
+    GuestDialogComponent,
+    LoginComponent,
+    FriendsComponent,
+    AccountUpgradeDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -52,17 +66,27 @@ import { MessagingService } from "./shared/messaging.service";
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    MatCardModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatSlideToggleModule,
+    MatDialogModule,
     MatIconModule,
     MatMenuModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFireAuthModule,
     AngularFireMessagingModule,
+    RootStoreModule,
   ],
-  providers: [AuthService, MessagingService, AsyncPipe],
+  providers: [
+    GlobalObsService,
+    AuthService,
+    MessagingService,
+    EventService,
+    StoreService,
+    AsyncPipe,
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

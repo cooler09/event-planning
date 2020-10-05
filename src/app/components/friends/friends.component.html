@@ -1,0 +1,30 @@
+<div class="row">
+  <div class="col-12" *ngIf="formGroup" [formGroup]="formGroup">
+    <mat-form-field class="m-2" appearance="fill">
+      <mat-label>User</mat-label>
+      <input matInput type="text" formControlName="name" />
+    </mat-form-field>
+    <button
+      [disabled]="!formGroup.valid"
+      class="m-3"
+      (click)="search()"
+      mat-raised-button
+      color="primary"
+    >
+      Search
+    </button>
+  </div>
+  <div class="col-12">
+    <div *ngFor="let result of searchResults">
+      {{ result.displayName }}
+      <button
+        (click)="addFriend(result.uid)"
+        mat-icon-button
+        aria-hidden="false"
+        aria-label="Add Friend"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

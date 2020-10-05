@@ -1,0 +1,66 @@
+<h3>Register</h3>
+
+<div *ngIf="formGroup" [formGroup]="formGroup">
+  <mat-form-field class="mx-3 w-100" appearance="fill">
+    <mat-label>Email</mat-label>
+    <input matInput type="email" formControlName="email" required />
+  </mat-form-field>
+  <div
+    *ngIf="
+      formGroup.get('email').invalid &&
+      (formGroup.get('email').dirty || formGroup.get('email').touched)
+    "
+    class="alert alert-danger"
+  >
+    <div *ngIf="formGroup.get('email').errors.email">Invalid Email format.</div>
+    <div *ngIf="formGroup.get('email').errors.required">Email is required.</div>
+  </div>
+  <mat-form-field class="mx-3 w-100" appearance="fill">
+    <mat-label>Display Name</mat-label>
+    <input matInput type="text" formControlName="displayName" required />
+  </mat-form-field>
+  <div
+    *ngIf="
+      formGroup.get('displayName').invalid &&
+      (formGroup.get('displayName').dirty ||
+        formGroup.get('displayName').touched)
+    "
+    class="alert alert-danger"
+  >
+    <div *ngIf="formGroup.get('displayName').errors.minlength">
+      Name must be at least 4 characters long.
+    </div>
+    <div *ngIf="formGroup.get('displayName').errors.required">
+      Name is required.
+    </div>
+  </div>
+  <mat-form-field class="mx-3 w-100" appearance="fill">
+    <mat-label>Password</mat-label>
+    <input matInput type="password" formControlName="password" required />
+  </mat-form-field>
+  <div
+    *ngIf="
+      formGroup.get('password').invalid &&
+      (formGroup.get('password').dirty || formGroup.get('password').touched)
+    "
+    class="alert alert-danger"
+  >
+    <div *ngIf="formGroup.get('password').errors.minlength">
+      Name must be at least 6 characters long.
+    </div>
+    <div *ngIf="formGroup.get('password').errors.required">
+      Name is required.
+    </div>
+  </div>
+
+  <button class="m-3" (click)="create()" mat-raised-button color="primary">
+    Create
+  </button>
+</div>
+<div class="formGroup">
+  <span class="or"><span class="orInner">Or</span></span>
+</div>
+<app-social-login
+  (facebookClick)="fbClick.emit()"
+  (googleClick)="googleClick.emit()"
+></app-social-login>

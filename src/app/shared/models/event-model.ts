@@ -1,4 +1,5 @@
 import { AttendeeModel } from "./attendee-model";
+import { CommentModel } from "./comment-model";
 
 export class EventModel {
   id: string;
@@ -8,12 +9,14 @@ export class EventModel {
   endDate: Date;
   maxAttendees: number;
   userId: string;
-  attendees: AttendeeModel[];
   waitListEnabled: boolean;
-  waitList: AttendeeModel[];
+  attendees: AttendeeModel[];
+  waitlist: AttendeeModel[];
+  comments: CommentModel[];
   constructor() {
     this.waitListEnabled = true;
     this.attendees = [];
-    this.waitList = [];
+    this.waitlist = [];
+    this.comments = [];
   }
 }

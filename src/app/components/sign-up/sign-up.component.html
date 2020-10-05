@@ -3,43 +3,11 @@
     <img src="assets\vb.jpg" class="img-fluid" alt="vb" />
   </div>
   <div class="col-12 col-sm-6 p-5 text-center">
-    <h3>Register</h3>
-
-    <mat-form-field class="mx-3 w-100" appearance="fill">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" #userName required />
-    </mat-form-field>
-    <mat-form-field class="mx-3 w-100" appearance="fill">
-      <mat-label>Display Name</mat-label>
-      <input matInput type="text" #displayName required />
-    </mat-form-field>
-    <mat-form-field class="mx-3 w-100" appearance="fill">
-      <mat-label>Password</mat-label>
-      <input matInput type="password" #userPassword required />
-    </mat-form-field>
-
-    <button
-      class="m-3"
-      (click)="
-        authService.SignUp(
-          userName.value,
-          userPassword.value,
-          displayName.value
-        )
-      "
-      mat-raised-button
-      color="primary"
-    >
-      Create
-    </button>
-
-    <div class="formGroup">
-      <span class="or"><span class="orInner">Or</span></span>
-    </div>
-    <app-social-login
-      (facebookClick)="authService.FacebookAuth()"
+    <app-login
+      (fbClick)="authService.FacebookAuth()"
       (googleClick)="authService.GoogleAuth()"
-    ></app-social-login>
+      (createClick)="createUser($event)"
+    ></app-login>
     <span
       >Already have an account?
       <span class="btn" routerLink="/login">Log In</span></span

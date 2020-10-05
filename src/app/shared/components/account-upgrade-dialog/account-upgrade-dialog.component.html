@@ -1,0 +1,5 @@
+<app-login
+  (fbClick)="authService.UpgradeAccountSM('facebook')"
+  (googleClick)="authService.UpgradeAccountSM('google')"
+  (createClick)="createUser($event)"
+></app-login>

@@ -56,7 +56,7 @@ export class MessagingService {
     this.angularFireMessaging.messages.subscribe((payload) => {
       let id = uuid();
       this.angularFireDB
-        .doc(`messages/${userId}/messages/${id}`)
+        .doc(`users/${userId}/messages/${id}`)
         .set(payload, { merge: true })
         .then();
 

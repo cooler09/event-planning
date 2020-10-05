@@ -41,44 +41,41 @@
     </ul>
     <div
       class="text-white dropdown"
-      *ngIf="
-        authService.isLoggedIn &&
-          authService.userData &&
-          authService.userData.displayName;
-        else userLoggedIn
-      "
+      *ngIf="authService.isLoggedIn; else userLoggedIn"
     >
-      <button
-        mat-icon-button
-        [matMenuTriggerFor]="menu"
-        aria-hidden="false"
-        aria-label="Notification Icon"
-      >
-        <mat-icon>notifications</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngFor="let notification of notifications">
-          {{ notification.notification.title }}
-        </button>
-      </mat-menu>
-      <a
-        class="nav-link dropdown-toggle btn text-white"
-        href="#"
-        id="profileDDL"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-      >
-        {{ authService.userData.displayName }}
-      </a>
-      <div class="dropdown-menu" aria-labelledby="profileDDL">
-        <a class="dropdown-item" href="/dashboard">Profile</a>
-        <a
-          class="dropdown-item"
-          style="cursor: pointer;"
-          (click)="authService.SignOut()"
-          >Logout</a
+      <div class="d-flex justify-content-between">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="menu"
+          aria-hidden="false"
+          aria-label="Notification Icon"
         >
+          <mat-icon>notifications</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item *ngFor="let notification of notifications">
+            {{ notification.notification.title }}
+          </button>
+        </mat-menu>
+        <a
+          class="nav-link dropdown-toggle btn text-white"
+          href="#"
+          id="profileDDL"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          {{ authService.userData.displayName }}
+        </a>
+        <div class="dropdown-menu" aria-labelledby="profileDDL">
+          <a class="dropdown-item" href="/dashboard">Profile</a>
+          <a
+            class="dropdown-item"
+            style="cursor: pointer;"
+            (click)="authService.SignOut()"
+            >Logout</a
+          >
+        </div>
       </div>
     </div>
     <ng-template #userLoggedIn
