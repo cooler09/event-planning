@@ -95,14 +95,14 @@ export class AuthService {
   AuthState(): Observable<firebase.User> {
     return this.afAuth.authState;
   }
-  UpgradeAccount(
+  async UpgradeAccount(
     email: string,
     password: string,
     displayName: string = "Player 1"
-  ) {
+  ): Promise<void> {
     var credential = auth.EmailAuthProvider.credential(email, password);
-    this.afAuth.currentUser.then((user) => {
-      user.linkWithCredential(credential).then(
+    return this.afAuth.currentUser.then(async (user) => {
+      await user.linkWithCredential(credential).then(
         (data) => {
           console.log("Anonymous account successfully upgraded", data);
           let userData = new User().safeParse({
@@ -145,7 +145,7 @@ export class AuthService {
       );
     });
   }
-  SignUpAnonymously(displayName: string) {
+  SignUpAnonymously(displayName: string): Promise<void> {
     return this.afAuth
       .signInAnonymously()
       .then((result) => {

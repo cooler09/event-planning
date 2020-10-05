@@ -16,6 +16,10 @@ export class AccountUpgradeDialogComponent implements OnInit {
 
   ngOnInit(): void {}
   createUser(data: any) {
-    this.authService.UpgradeAccount(data.username, data.pass, data.displayName);
+    this.authService
+      .UpgradeAccount(data.username, data.pass, data.displayName)
+      .then(() => {
+        this.dialogRef.close();
+      });
   }
 }

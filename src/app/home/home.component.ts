@@ -96,7 +96,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   upgradeAccount() {
     this.dialog.open(AccountUpgradeDialogComponent, {
-      width: "500px",
+      width: "800px",
       data: { displayName: "" },
     });
   }
