@@ -5,13 +5,15 @@ import { Router } from "@angular/router";
 import { EventModel } from "../shared/models/event-model";
 import { AuthService } from "../shared/services/auth.service";
 import { EventService } from "../shared/services/event.service";
-import { UserService } from "../shared/services/user.service";
 import { Subscription, merge } from "rxjs";
 import DateHelper from "../shared/utils/date-helper";
 import { MatDialog } from "@angular/material/dialog";
 import { AccountUpgradeDialogComponent } from "../shared/components/account-upgrade-dialog/account-upgrade-dialog.component";
 import { StoreService } from "../shared/services/store.service";
-import { selectEvent, selectEvents } from "../root-store/event-store/selectors";
+import { selectEvent } from "../root-store/event-store/selectors";
+import EventHelper from "../shared/utils/event-helper";
+import { selectCurrentUser } from "../root-store/user-store/selectors";
+import { FSEventModel } from "../shared/models/fs-event-model";
 
 @Component({
   selector: "app-home",
@@ -26,6 +28,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   userRef: any;
   eventRef: any = {};
   events: EventModel[] = [];
+  publicEvents: EventModel[] = [];
   friendRef: any = {};
   friends: any[] = [];
 
@@ -37,8 +40,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly storeService: StoreService,
     public readonly dialog: MatDialog,
     private readonly router: Router,
-    private readonly eventService: EventService,
-    private readonly userService: UserService
+    private readonly eventService: EventService
   ) {
     this.subscription = new Subscription();
     this.formGroup = new FormGroup({
@@ -60,55 +62,41 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.storeService.select(selectEvents).subscribe((events) => {
-      this.events = events;
-    });
-    if (this.authService.isLoggedIn) {
-      this.subscription.add(
-        this.userService
-          .getUserData<any>(this.authService.userData.uid)
-          .valueChanges()
-          .subscribe((userData) => {
-            if (userData) {
-              if (userData.events && userData.events.length > 0) {
-                // let events = userData.events.map((event) => {
-                //   return this.eventService.getEvent(event);
-                // });
-                // this.subscription.add(
-                //   merge<EventModel>(...events).subscribe((event) => {
-                //     this.eventRef[event.id] = event;
-                //     this.events = Object.values(this.eventRef) as EventModel[];
-                //   })
-                // );
-              } else {
-                this.eventRef = {};
+    this.subscription.add(
+      this.storeService.select(selectCurrentUser).subscribe((currentUser) => {
+        console.log(currentUser);
+        if (currentUser && currentUser.events) {
+          let obs = currentUser.events.map((eventId) => {
+            return this.storeService.select(selectEvent(eventId));
+          });
+          this.subscription.add(
+            merge(...obs).subscribe((event) => {
+              if (event) {
+                console.log(event);
+                this.eventRef[event.id] = event;
                 this.events = Object.values(this.eventRef) as EventModel[];
               }
-              if (userData.friends && userData.friends.length > 0) {
-                let friends = userData.friends.map((friend) => {
-                  return this.userService.getFriendData(friend);
-                });
-                this.subscription.add(
-                  merge<any>(...friends).subscribe((user) => {
-                    this.friendRef[user.uid] = user;
-                    this.friends = Object.values(this.friendRef) as any[];
-                  })
-                );
-              } else {
-                this.friendRef = {};
-                this.friends = Object.values(this.friendRef) as any[];
-              }
-            }
-          })
-      );
-    }
+            })
+          );
+        }
+      })
+    );
+    this.subscription.add(
+      this.eventService.getEvents().subscribe((events) => {
+        if (events) {
+          this.publicEvents = events.map((event) =>
+            EventHelper.convertToReduxEvent(event)
+          );
+        }
+      })
+    );
   }
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
   upgradeAccount() {
     this.dialog.open(AccountUpgradeDialogComponent, {
-      width: "500px",
+      width: "800px",
       data: { displayName: "" },
     });
   }
@@ -123,7 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     endDate.setHours(this.formGroup.get("endHour").value);
     endDate.setMinutes(this.formGroup.get("endMinute").value);
     let id = uuid();
-    let eventModel = new EventModel();
+    let eventModel = new FSEventModel();
     eventModel.id = id;
     eventModel.name = name;
     eventModel.location = location;
@@ -132,9 +120,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     eventModel.maxAttendees = +this.formGroup.get("maxAttendees").value;
     eventModel.waitListEnabled = this.formGroup.get("waitListEnabled").value;
     eventModel.userId = this.authService.userData.uid;
-    let parsedEvent = Object.assign({}, eventModel);
     Promise.all([
-      this.eventService.addEvent(parsedEvent),
+      this.eventService.addEvent(eventModel),
       ...[].map((attendee) =>
         this.eventService.addAttendeeFirebase(id, attendee)
       ),

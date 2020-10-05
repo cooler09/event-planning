@@ -1,10 +1,10 @@
 import { Injectable } from "@angular/core";
-import { EventModel } from "../models/event-model";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { AttendeeModel } from "../models/attendee-model";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { CommentModel } from "../models/comment-model";
+import { FSEventModel } from "../models/fs-event-model";
 
 @Injectable({
   providedIn: "root",
@@ -22,22 +22,23 @@ export class EventService {
     );
   }
   async removeAttendee(
-    event: EventModel,
+    eventId: string,
+    waitListEnabled: boolean,
     id: string,
     waitlist: AttendeeModel[]
   ) {
     // remove attendee from DB
-    await this.removeAttendeeFromDB(event.id, id).then();
+    await this.removeAttendeeFromDB(eventId, id).then();
     // Check if there is a waitlist
     // if so and there is a user on the waitlist
-    if (event.waitListEnabled && waitlist.length > 0) {
+    if (waitListEnabled && waitlist.length > 0) {
       let nextUser = waitlist
         .sort((a, b) => (a.signUpDate < b.signUpDate ? 1 : -1))
         .pop();
       // remove them from the waitlist
-      await this.removeWaitlistFromDB(event.id, nextUser.id).then();
+      await this.removeWaitlistFromDB(eventId, nextUser.id).then();
       // add them to the attendee list
-      await this.addAttendeeFirebase(event.id, nextUser).then();
+      await this.addAttendeeFirebase(eventId, nextUser).then();
     }
   }
   removeAttendeeFromDB(eventId: string, id: string) {
@@ -101,15 +102,36 @@ export class EventService {
         })
       );
   }
-  addEvent(event: EventModel) {
-    return this.firestore.doc<EventModel>(`/events/${event.id}`).set(event);
+  addEvent(event: FSEventModel) {
+    return this.firestore
+      .doc<FSEventModel>(`/events/${event.id}`)
+      .set({ ...event });
   }
   addComment(eventId: string, comment: CommentModel) {
     return this.firestore
       .doc(`/events/${eventId}/comments/${comment.id}`)
       .set({ ...comment });
   }
-  getEvent(id: string): Observable<EventModel> {
+  getEvents(): Observable<FSEventModel[]> {
+    return (
+      this.firestore
+        .collection<any>(`/events/`)
+        //.where('startDate', '>', new Date().toString())
+        .valueChanges()
+        .pipe(
+          map((docs) => {
+            return docs.map((doc) => {
+              doc.startDate = doc.startDate.toDate();
+              doc.endDate = doc.endDate.toDate();
+              doc.attendees = [];
+              doc.waitlist = [];
+              return doc as FSEventModel;
+            });
+          })
+        )
+    );
+  }
+  getEvent(id: string): Observable<FSEventModel> {
     return this.firestore
       .doc<any>(`/events/${id}`)
       .valueChanges()
@@ -119,7 +141,7 @@ export class EventService {
           doc.endDate = doc.endDate.toDate();
           doc.attendees = [];
           doc.waitlist = [];
-          doc = doc as EventModel;
+          doc = doc as FSEventModel;
           return doc;
         })
       );

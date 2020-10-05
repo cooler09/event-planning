@@ -3,10 +3,13 @@ import { auth } from "firebase/app";
 import { AngularFireAuth } from "@angular/fire/auth";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Router, ActivatedRoute } from "@angular/router";
-import { Subscription, of } from "rxjs";
+import { Subscription, of, Observable, merge } from "rxjs";
 import { UserService } from "./user.service";
 import { User } from "../models/user";
-import { map } from "rxjs/operators";
+import { StoreService } from "./store.service";
+import { SetCurrentUser } from "src/app/root-store/user-store/actions";
+import { selectCurrentUser } from "src/app/root-store/user-store/selectors";
+import { GlobalObsService } from "./global-obs.service";
 
 @Injectable({
   providedIn: "root",
@@ -40,37 +43,45 @@ export class AuthService {
     public readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly userService: UserService,
+    private readonly storeService: StoreService,
+    private readonly globalService: GlobalObsService,
     public readonly ngZone: NgZone // NgZone service to remove outside scope warning
   ) {
     this.userDataSubscription = new Subscription();
     this.subscriptions = new Subscription();
+
+    this.subscriptions.add(
+      this.storeService.select(selectCurrentUser).subscribe((currentUser) => {
+        this.setLocalStorage(currentUser);
+        if (currentUser && currentUser.events) {
+          currentUser.events.forEach((event) => {
+            this.globalService.registerEvent(event);
+          });
+        }
+      })
+    );
     /* Saving user data in localstorage when 
     logged in and setting up null when logged out */
     this.subscriptions.add(
-      this.afAuth.authState.subscribe((user) => {
-        console.log("authState", user);
+      this.AuthState().subscribe((user) => {
+        // if user is logged in
         if (user) {
-          let userData = this.userService.getUserData(user.uid);
-          this.userDataSubscription.add(
-            userData.valueChanges().subscribe((_) => {
+          // subscribe to any changes in firebase
+          this.userService
+            .getUserData(user.uid)
+            .valueChanges()
+            .subscribe((_) => {
+              // checks if we have valid information
               if (_ && _["uid"]) {
-                this.setLocalStorage(_);
+                // set the redux store
+                this.storeService.dispatch(
+                  new SetCurrentUser(new User().setData(_))
+                );
               } else {
-                this.afs
-                  .doc(`/users/${user.uid}`)
-                  .set(this.parseUserData(user), { merge: true });
+                let data = new User().setData(user);
+                this.userService.setUserData(data);
               }
-            })
-          );
-          this.userDataSubscription.add(
-            userData.get().subscribe((refData) => {
-              if (!refData.exists) {
-                this.afs
-                  .doc(`/users/${user.uid}`)
-                  .set(this.parseUserData(user), { merge: true });
-              }
-            })
-          );
+            });
         } else {
           this.clearUserData();
         }
@@ -81,18 +92,27 @@ export class AuthService {
     this.subscriptions.unsubscribe();
     this.userDataSubscription.unsubscribe();
   }
-  UpgradeAccount(email: string, password: string, displayName: string = "") {
+  AuthState(): Observable<firebase.User> {
+    return this.afAuth.authState;
+  }
+  async UpgradeAccount(
+    email: string,
+    password: string,
+    displayName: string = "Player 1"
+  ): Promise<void> {
     var credential = auth.EmailAuthProvider.credential(email, password);
-    this.afAuth.currentUser.then((user) => {
-      user.linkWithCredential(credential).then(
+    return this.afAuth.currentUser.then(async (user) => {
+      await user.linkWithCredential(credential).then(
         (data) => {
           console.log("Anonymous account successfully upgraded", data);
-          if (displayName) {
-            this.clearUserData();
-            data.user.updateProfile({
-              displayName: displayName,
-            });
-          }
+          let userData = new User().safeParse({
+            ...data.user,
+            ...data.additionalUserInfo?.profile,
+            displayName: displayName,
+          });
+          this.userService.setUserData(userData);
+          data.user.updateProfile(userData);
+
           /* Call the SendVerificaitonMail() function when new user sign 
         up and returns promise */
           this.SendVerificationMail(false);
@@ -103,15 +123,35 @@ export class AuthService {
       );
     });
   }
-  SignUpAnonymously(displayName: string) {
+
+  UpgradeAccountSM(type: "facebook" | "google") {
+    var credential =
+      type === "facebook"
+        ? new auth.FacebookAuthProvider()
+        : new auth.GoogleAuthProvider();
+    this.afAuth.currentUser.then((user) => {
+      user.linkWithPopup(credential).then(
+        (data) => {
+          console.log("Anonymous account successfully upgraded", data);
+          let userData = new User().safeParse({
+            ...data.user,
+            ...data.additionalUserInfo?.profile,
+          });
+          this.userService.setUserData(userData);
+        },
+        (error) => {
+          console.log("Error upgrading anonymous account", error);
+        }
+      );
+    });
+  }
+  SignUpAnonymously(displayName: string): Promise<void> {
     return this.afAuth
       .signInAnonymously()
       .then((result) => {
-        result.user
-          .updateProfile({
-            displayName: displayName ? displayName : "Anonymous",
-          })
-          .then();
+        result.user.updateProfile({
+          displayName: displayName ? displayName : "Anonymous",
+        });
       })
       .catch((error) => {
         window.alert(error.message);
@@ -171,33 +211,22 @@ export class AuthService {
   }
 
   // Sign in with Google
-  GoogleAuth(migrateUser: string = null) {
-    return this.AuthLogin(new auth.GoogleAuthProvider(), migrateUser);
+  GoogleAuth() {
+    return this.AuthLogin(new auth.GoogleAuthProvider());
   }
-  FacebookAuth(migrateUser: string = null) {
-    return this.AuthLogin(new auth.FacebookAuthProvider(), migrateUser);
+  FacebookAuth() {
+    return this.AuthLogin(new auth.FacebookAuthProvider());
   }
 
   // Auth logic to run auth providers
-  AuthLogin(provider, migrateUser: string = null) {
+  AuthLogin(provider) {
     return this.afAuth
       .signInWithPopup(provider)
       .then((result) => {
-        if (migrateUser) {
-          this.migrateUser(migrateUser, result.user.uid).then(() => {
-            this.clearUserData();
-            this.ngZone.run(() => {
-              let returnUrl =
-                this.route.snapshot.queryParams["returnUrl"] || "/";
-              this.router.navigate([returnUrl]);
-            });
-          });
-        } else {
-          this.ngZone.run(() => {
-            let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
-            this.router.navigate([returnUrl]);
-          });
-        }
+        this.ngZone.run(() => {
+          let returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+          this.router.navigate([returnUrl]);
+        });
       })
       .catch((error) => {
         window.alert(error);
@@ -210,76 +239,9 @@ export class AuthService {
       this.clearUserData();
     });
   }
-  private async migrateUser(refUserId: string, destUserId): Promise<void> {
-    let doc = await this.afs.doc(`/users/${refUserId}`).get().toPromise();
-    if (doc.exists) {
-      let data = doc.data();
-      if (data && data.events) {
-        await this.afs.doc(`/users/${destUserId}`).set(
-          {
-            events: data.events,
-          },
-          { merge: true }
-        );
-        await this.afs.doc(`/users/${refUserId}`).delete();
-
-        let promises = data.events.forEach((event) => {
-          return new Promise(async () => {
-            let attendeesRef = await this.afs
-              .collection(`/events/${event}/attendees`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let attendees = attendeesRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/attendees/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-            let waitlistRef = await this.afs
-              .collection(`/events/${event}/waitlist`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let waitlistUsers = waitlistRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/waitlist/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-            let commentsRef = await this.afs
-              .collection(`/events/${event}/comments`, (ref) =>
-                ref.where("userId", "==", refUserId)
-              )
-              .get()
-              .toPromise();
-            let comments = commentsRef.docs.map((doc) => {
-              return new Promise(async () => {
-                await this.afs.doc(`/events/${event}/comments/${doc.id}`).set({
-                  ...doc.data(),
-                  userId: destUserId,
-                });
-              });
-            });
-
-            await Promise.all(attendees);
-            await Promise.all(waitlistUsers);
-            await Promise.all(comments);
-          });
-        });
-        await Promise.all(promises);
-      }
-    }
-    return Promise.resolve();
-  }
-
   private clearUserData() {
+    console.log("clearing subs");
+    this.storeService.dispatch(new SetCurrentUser(null));
     this.userDataSubscription.unsubscribe();
     this._userData = null;
     localStorage.removeItem("user");
@@ -287,15 +249,5 @@ export class AuthService {
   private setLocalStorage(user) {
     this._userData = user;
     localStorage.setItem("user", user ? JSON.stringify(user) : user);
-    JSON.parse(localStorage.getItem("user"));
-  }
-  private parseUserData(user) {
-    return {
-      uid: user.uid,
-      email: user.email,
-      photoURL: user.photoURL,
-      emailVerified: user.emailVerified,
-      displayName: user.displayName,
-    };
   }
 }
