@@ -106,4 +106,20 @@ export class UserService {
     // create user information
     this.firestore.doc(`/users/${user.uid}`).set({ ...user }, { merge: true });
   }
+  async getAvailableFriendCode(code: number): Promise<number> {
+    let codeDb = await this.firestore
+      .doc(`/usedFriendCodes/${code}`)
+      .get()
+      .toPromise();
+    if (!codeDb.exists) {
+      await this.firestore.doc(`/usedFriendCodes/${code}`).set({});
+      return code;
+    }
+
+    return this.getAvailableFriendCode(this.generateCode());
+  }
+
+  private generateCode(): number {
+    return Math.floor(10000000 + Math.random() * 90000000);
+  }
 }
