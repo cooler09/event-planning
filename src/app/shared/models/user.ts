@@ -4,6 +4,7 @@ export class User {
   displayName: string;
   photoURL: string;
   emailVerified: boolean;
+  friendCode: number;
   events: string[];
   friends: string[];
   constructor() {
@@ -18,6 +19,7 @@ export class User {
     if (user["emailVerified"]) this.emailVerified = user["emailVerified"];
     if (user["events"]) this.events = user["events"];
     if (user["friends"]) this.friends = user["friends"];
+    if (user["friendCode"]) this.friendCode = user["friendCode"];
     return this;
   }
   safeParse(data: any) {
@@ -28,6 +30,7 @@ export class User {
     if (data["displayName"]) parsedData["displayName"] = data["displayName"];
     if (data["photoURL"]) parsedData["photoURL"] = data["photoURL"];
     if (data["picture"]) parsedData["photoURL"] = data["picture"];
+    if (data["friendCode"]) parsedData["friendCode"] = data["friendCode"];
     if (data["emailVerified"])
       parsedData["emailVerified"] = data["emailVerified"];
     if (data["verified_email"])

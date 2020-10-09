@@ -173,7 +173,7 @@ export class AuthService {
   }
 
   // Sign up with email/password
-  SignUp(email, password, displayName) {
+  SignUp(email, password, displayName): Promise<void> {
     return this.afAuth
       .createUserWithEmailAndPassword(email, password)
       .then((result) => {
